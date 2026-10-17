@@ -1,0 +1,64 @@
+---
+import config from '../../site.config.json';
+const gaIds = Object.fromEntries(Object.entries(config.googleAnalyticsMeasurementIds).filter(([host, id]) => ['swoovr.app', 'swoovr.com'].includes(host) && /^G-[A-Z0-9]+$/.test(id)));
+const hasAnalytics = Object.keys(gaIds).length > 0;
+---
+<button type="button" class="privacy-pill" data-privacy-open><img src="/privacyoptions29x14.png" width="29" height="14" alt="" />Your privacy choices</button>
+<section id="privacy-panel" class="privacy-panel" role="region" aria-labelledby="privacy-title" hidden>
+  <h2 id="privacy-title">Your privacy choices</h2>
+  <p>{hasAnalytics ? 'With your permission, we use Google Analytics to understand visits to Swoovr. Analytics stays off until you allow it. We don’t use advertising cookies or sell personal information.' : 'Optional analytics is currently disabled. We only remember your privacy choice in this browser. We don’t use advertising cookies or sell personal information.'} You can change your choice here at any time. <a href="/privacy/">Read our privacy notice.</a></p>
+  <div class="privacy-actions">
+    {hasAnalytics && <button type="button" id="privacy-allow">Allow analytics</button>}
+    <button type="button" id="privacy-deny">{hasAnalytics ? 'Don’t allow analytics' : 'Necessary only'}</button>
+  </div>
+</section>
+<script is:inline define:vars={{ gaIds }}>
+(() => {
+  const gaId = gaIds[location.hostname] || '';
+  const key = 'swoovr_privacy_v1';
+  const panel = document.getElementById('privacy-panel');
+  const open = document.querySelector('[data-privacy-open]');
+  const gpc = navigator.globalPrivacyControl === true;
+  let loaded = false;
+  const read = () => { try { return localStorage.getItem(key); } catch { return null; } };
+  const save = value => { try { localStorage.setItem(key, value); } catch {} };
+  function load() {
+    if (loaded || !gaId || gpc) return;
+    loaded = true;
+    window['ga-disable-' + gaId] = false;
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = function () { window.dataLayer.push(arguments); };
+    window.gtag('consent', 'default', { analytics_storage: 'granted', ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied' });
+    window.gtag('js', new Date());
+    // Send a clean URL without query parameters, fragments, form events or user identifiers.
+    window.gtag('config', gaId, { send_page_view: false, page_location: location.origin + location.pathname, page_referrer: '', allow_google_signals: false, allow_ad_personalization_signals: false });
+    window.gtag('event', 'page_view', { page_location: location.origin + location.pathname, page_title: document.title, page_referrer: '' });
+    const script = document.createElement('script'); script.async = true;
+    script.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(gaId);
+    document.head.appendChild(script);
+  }
+  function clearAnalyticsCookies() {
+    const domains = ['', location.hostname, '.' + location.hostname];
+    for (const cookie of document.cookie.split(';')) {
+      const name = cookie.split('=')[0].trim();
+      if (/^_ga(?:_|$)|^_gid$|^_gat/.test(name)) for (const domain of domains) {
+        document.cookie = name + '=; Max-Age=0; Path=/; SameSite=Lax' + (domain ? '; Domain=' + domain : '');
+      }
+    }
+  }
+  const choice = read();
+  if (gpc) { save('denied'); clearAnalyticsCookies(); }
+  else if (choice === 'granted') load();
+  else if (choice !== 'denied') panel.hidden = false;
+  open?.addEventListener('click', () => { panel.hidden = false; (document.getElementById('privacy-allow') || document.getElementById('privacy-deny'))?.focus(); });
+  document.getElementById('privacy-allow')?.addEventListener('click', () => { save('granted'); load(); panel.hidden = true; open?.focus(); });
+  document.getElementById('privacy-deny')?.addEventListener('click', () => {
+    save('denied');
+    if (gaId) window['ga-disable-' + gaId] = true;
+    clearAnalyticsCookies(); panel.hidden = true; open?.focus();
+    // Unload already-running tags after consent withdrawal.
+    if (loaded) location.reload();
+  });
+  window.addEventListener('storage', event => { if (event.key === key) location.reload(); });
+})();
+</script>

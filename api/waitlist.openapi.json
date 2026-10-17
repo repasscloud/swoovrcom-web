@@ -1,0 +1,21 @@
+{
+  "openapi": "3.1.0",
+  "info": { "title": "Swoovr waitlist", "version": "1.0.0", "description": "Same-origin public signup. No database. Notification acceptance is not proof of inbox delivery or address ownership. Throttling and a honeypot reduce simple abuse; they do not establish human identity. Provider transport ambiguity can cause duplicate notifications if a person retries." },
+  "servers": [{ "url": "https://swoovr.app" }, { "url": "https://swoovr.com" }],
+  "paths": { "/api/waitlist": { "post": {
+    "operationId": "joinWaitlist", "summary": "Submit an email and permission for launch updates",
+    "description": "Requires an Origin matching the serving website and application/json; maximum request size is 4096 bytes. Email must be an ASCII mailbox, maximum 254 characters with local part no longer than 64 characters. IP throttling is approximate and local to each Cloudflare location. A populated honeypot is discarded with the same success response. MailerSend receives only a SWOOVR1: RSA-OAEP-SHA256 encrypted record containing email, consent version and UTC time. Sender, recipient and subject cannot be overridden.",
+    "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["email", "consent"], "properties": { "email": { "type": "string", "format": "email", "maxLength": 254 }, "consent": { "type": "boolean", "const": true }, "website": { "type": "string", "description": "Honeypot; normal clients send an empty string." } } }, "example": { "email": "person@example.com", "consent": true, "website": "" } } } },
+    "responses": {
+      "202": { "description": "MailerSend accepted the notification for sending, or honeypot submission silently discarded. Body: {ok:true}." },
+      "400": { "description": "Invalid JSON, email or consent. Body: {ok:false,error:string}." },
+      "403": { "description": "Missing or invalid Origin." },
+      "405": { "description": "Method other than POST; Allow: POST." },
+      "413": { "description": "Request exceeds 4096 bytes." },
+      "415": { "description": "Content-Type must be application/json." },
+      "429": { "description": "Throttled; Retry-After: 60." },
+      "502": { "description": "MailerSend acceptance unconfirmed, rejected, paused or suppressed. Retrying can duplicate a notification after an ambiguous network failure." },
+      "503": { "description": "Missing or invalid configuration, or rate limiter unavailable. No notification sent." }
+    }
+  } } }
+}

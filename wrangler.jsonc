@@ -1,0 +1,44 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "swoovr-web",
+  "account_id": "8d7f0c4cf8b2408a145786b0996af45b",
+  "main": "src/worker.mjs",
+  "compatibility_date": "2026-10-17",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "run_worker_first": true,
+    "not_found_handling": "404-page"
+  },
+  "workers_dev": false,
+  "preview_urls": false,
+  "observability": {
+    "enabled": true,
+    "traces": {
+      "enabled": true
+    }
+  },
+  "ratelimits": [
+    {
+      "name": "WAITLIST_RATE_LIMIT",
+      "namespace_id": "1001",
+      "simple": {
+        "limit": 3,
+        "period": 60
+      }
+    }
+  ],
+  "vars": {
+    "WAITLIST_PUBLIC_KEY": "-----BEGIN PUBLIC KEY-----\nMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAv8EaLl4WVPndKhKWnaJW\n1dJla/07F49syGZgEOZkPwGz3ooIonE7Eaj9P5HUJlpr0U4D4KlAB6c9HnThFM6A\n+9dQyFPe4y1+iuRCge/Xh8c2DcdfRGOBh6Q2xobcLR1Ut0NbPht0bhxiFP5RYwwL\nV42On5Rv1lhfic0womZNQbFMF+K7vCxuzkzTjJGM8WveVKUj7819v2LRriqL91i1\nm/9STdeu97PBafhP+glh4gsr138EgPOTyRIbj3C7uvqiGaSvL8uvLNf+okkLE+oR\nojxkOmjzWDq8StlyuZhamQWlerJWWT+0ipIxmnmfTKJmr2rlX3ibhBIUJf1LeQG4\nbHgBpjI9Zc51lWC/r29WefeoWBGvhfzuyOjjOu2C8CVt48vrgKXqbK1+5BAwpag4\nCrNRege323zjR5qRX1q4+c9goHfoqiFtDx3fDnO+N50exQ20/hg6xj7fKEypUX8k\nw9qlAwrNhclJbQdtmsxeil4q4dBFQcCmX00JrqY6VHy7QCad/OppYx6V03jErCsX\nZE9GSUwMipEvhHg+vGo4XtYZcF5NYe8Ju/DsEhSaL/HvO/w2LqJ7BCzmxeQ4IpeP\nOjvdG9oj/okb7LlKM/EZxSK9l4mw8D67anN7qKxxIiyD3J3ZQ5O2bjnhhnkOThKQ\n7jP+doxdUXt4BvMnKLC2vusCAwEAAQ==\n-----END PUBLIC KEY-----\n"
+  },
+  "routes": [
+    {
+      "pattern": "swoovr.app/*",
+      "zone_name": "swoovr.app"
+    },
+    {
+      "pattern": "swoovr.com/*",
+      "zone_name": "swoovr.com"
+    }
+  ]
+}

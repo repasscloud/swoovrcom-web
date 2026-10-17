@@ -1,0 +1,4 @@
+# Copy to .dev.vars (ignored), then set a MailerSend email/send token.
+MAILERSEND_API_KEY=
+# Only for local Wrangler development. Never upload this variable to production.
+LOCAL_DEVELOPMENT=true

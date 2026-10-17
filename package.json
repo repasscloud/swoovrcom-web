@@ -1,0 +1,28 @@
+{
+  "name": "swoovr-landing",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "photos": "node scripts/prepare-photos.mjs",
+    "dev": "npm run photos && astro dev",
+    "build": "npm run photos && astro build",
+    "preview": "astro preview",
+    "test": "node --test tests/*.test.mjs",
+    "dev:worker": "npm run build && wrangler dev --port 8787",
+    "deploy": "./deploy.sh",
+    "key:setup": "node scripts/setup-waitlist-key.mjs",
+    "waitlist:decrypt": "node scripts/decrypt-waitlist.mjs"
+  },
+  "dependencies": {
+    "astro": "^7.4.0",
+    "sharp": "^0.35.5"
+  },
+  "devDependencies": {
+    "miniflare": "5.20261012.1-beta",
+    "wrangler": "^4.151.1"
+  }
+}

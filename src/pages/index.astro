@@ -1,0 +1,123 @@
+---
+import PrivacyChoices from '../components/PrivacyChoices.astro';
+import photos from '../data/photos.json';
+import '../styles/global.css';
+const columns = Array.from({ length: 4 }, (_, column) => {
+  return Array.from({ length: Math.max(4, Math.ceil(photos.length / 4)) }, (_, row) => photos[(row * 4 + column) % photos.length]).filter(Boolean);
+});
+---
+<!doctype html>
+<html lang="en-AU">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="theme-color" content="#eee8fa" />
+    <title>Swoovr — Your kind of connection. Join the waitlist.</title>
+    <meta name="description" content="Friendship, dating, or a little company along the way. Swoovr is a new way to find your kind of connection. Join the waitlist for launch updates." />
+    <meta property="og:url" content="/" />
+    <link rel="sitemap" type="application/xml" href="/sitemap-index.xml" />
+    <link rel="canonical" href="/" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <meta property="og:title" content="Swoovr — Your kind of connection" />
+    <meta property="og:description" content="People to meet. Possibilities to explore. Join the waitlist for launch updates." />
+    <meta property="og:type" content="website" />
+  </head>
+  <body>
+    <div class="landing">
+      <header>
+        <a href="/" class="brand" aria-label="Swoovr home"><img src="/brand/logo.svg" alt="Swoovr" width="174" height="54" /></a>
+      </header>
+      <main>
+        <section class="intro" aria-labelledby="headline">
+          <p class="opening">Life’s better with your kind of people.</p>
+          <h1 id="headline">Your kind<br />of connection.</h1>
+          <p class="description">New friends. A spark. Someone to explore with.<br class="desktop-break" /> Make room for the people you haven’t met yet.</p>
+          <form id="waitlist-form" class="waitlist-form" action="/api/waitlist" method="post">
+            <label for="waitlist-email">Be first to hear when Swoovr launches.</label>
+            <div class="signup-row">
+              <input id="waitlist-email" name="email" type="email" autocomplete="email" inputmode="email" maxlength="254" placeholder="Your email address" required data-private="true" />
+              <button type="submit">Join the waitlist <span aria-hidden="true">↗</span></button>
+            </div>
+            <div class="form-trap" aria-hidden="true"><label for="waitlist-website">Leave this empty</label><input id="waitlist-website" name="website" tabindex="-1" autocomplete="off" /></div>
+            <label class="consent-row"><input type="checkbox" name="consent" required /> <span>I’m 18 or over and agree to receive Swoovr launch updates from RePass Cloud. <a href="/privacy/">Privacy notice</a>.</span></label>
+            <p id="waitlist-status" class="form-status" role="status" aria-live="polite"></p>
+            <noscript><p>Enable JavaScript to join the waitlist.</p></noscript>
+          </form>
+          <p class="signoff">A little curiosity. A whole lot of possibility.</p>
+        </section>
+        <div class="photo-scene" role="img" aria-label="A moving collage of people, illustrating the connections to come">
+          <div class="photo-wall" aria-hidden="true">
+            {columns.map((column, index) => (
+              <div class="photo-column" style={`--duration:${65 + index * 9}s; --offset:${index % 2 ? '-160px' : '0px'}`}>
+                <div class="photo-track">
+                  {[0, 1].map(() => <div class="photo-set">{column.map(src => <div class="portrait"><img src={src} width="480" height="640" alt="" decoding="async" /></div>)}</div>)}
+                </div>
+              </div>
+            ))}
+          </div>
+          {photos.length === 0 && <div class="empty-wall">People to meet.<br />Stories to share.</div>}
+        </div>
+      </main>
+      <footer>
+        <div class="footer-links"><p>© {new Date().getFullYear()} Swoovr by <a href="https://repasscloud.com/">RePass Cloud Pty Ltd</a></p><a href="/privacy/">Privacy</a><PrivacyChoices /></div>
+        <div class="photo-controls">
+          <span>Illustrative photos, not member profiles.</span>
+          <button type="button" id="motion-toggle" aria-pressed="false">Pause motion</button>
+        </div>
+      </footer>
+    </div>
+    <script>
+      const form = document.querySelector<HTMLFormElement>('#waitlist-form');
+      const status = document.querySelector<HTMLElement>('#waitlist-status');
+      const submit = form?.querySelector<HTMLButtonElement>('button[type="submit"]');
+      form?.addEventListener('submit', async event => {
+        event.preventDefault();
+        if (!form.reportValidity() || !submit || !status) return;
+        const fields = new FormData(form);
+        submit.disabled = true; submit.textContent = 'Joining…'; status.textContent = '';
+        form.setAttribute('aria-busy', 'true');
+        try {
+          const response = await fetch('/api/waitlist', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: AbortSignal.timeout(20000),
+            body: JSON.stringify({ email: fields.get('email'), consent: fields.get('consent') === 'on', website: fields.get('website') }),
+          });
+          const result = await response.json();
+          if (!response.ok || !result.ok) throw new Error(result.error || 'We could not confirm your signup. Please try again later.');
+          form.reset(); status.textContent = 'You’re on the list. We’ll be in touch when Swoovr is ready.';
+        } catch (error) {
+          status.textContent = error instanceof Error && error.name !== 'TimeoutError' && error.name !== 'TypeError' ? error.message : 'We could not confirm your signup. Please try again later.';
+        } finally { submit.disabled = false; submit.textContent = 'Join the waitlist ↗'; form.removeAttribute('aria-busy'); }
+      });
+      const wall = document.querySelector<HTMLElement>('.photo-wall');
+      const sources = [...new Set(Array.from(document.querySelectorAll<HTMLImageElement>('.photo-set img'), image => image.getAttribute('src')!))];
+      for (let i = sources.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [sources[i], sources[j]] = [sources[j], sources[i]];
+      }
+      let cursor = 0;
+      document.querySelectorAll('.photo-column').forEach(column => {
+        const sets = column.querySelectorAll('.photo-set');
+        const first = sets[0]?.querySelectorAll('img');
+        first?.forEach((image, index) => {
+          const source = sources[cursor++ % sources.length];
+          if (source) {
+            image.setAttribute('src', source);
+            sets[1]?.querySelectorAll('img')[index]?.setAttribute('src', source);
+          }
+        });
+      });
+      const button = document.querySelector<HTMLButtonElement>('#motion-toggle');
+      const preference = window.matchMedia('(prefers-reduced-motion: reduce)');
+      let paused = preference.matches;
+      function updateMotion() {
+        wall?.classList.toggle('paused', paused);
+        wall?.classList.toggle('playing', !paused);
+        button?.setAttribute('aria-pressed', String(paused));
+        if (button) button.textContent = paused ? 'Play motion' : 'Pause motion';
+      }
+      button?.addEventListener('click', () => { paused = !paused; updateMotion(); });
+      preference.addEventListener('change', event => { paused = event.matches; updateMotion(); });
+      updateMotion();
+    </script>
+  </body>
+</html>
