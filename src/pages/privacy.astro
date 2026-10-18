@@ -1,31 +1,23 @@
 ---
-import PrivacyChoices from '../components/PrivacyChoices.astro';
+import SiteLayout from '../layouts/SiteLayout.astro';
 import config from '../../site.config.json';
-import '../styles/global.css';
 const analyticsEnabled = Object.values(config.googleAnalyticsMeasurementIds).some(id => /^G-[A-Z0-9]+$/.test(id));
 ---
-<!doctype html>
-<html lang="en-AU">
-  <head>
-    <meta charset="UTF-8" /><meta name="viewport" content="width=device-width" />
-    <title>Swoovr waitlist privacy notice</title>
-    <meta name="description" content="How RePass Cloud handles your email address when you join the Swoovr waitlist, and how to control optional analytics." />
-    <meta property="og:url" content="https://swoovr.com/privacy/" />
-    <link rel="sitemap" type="application/xml" href="/sitemap-index.xml" />
-    <link rel="canonical" href="https://swoovr.com/privacy/" /><link rel="icon" href="/favicon.png" />
-  </head>
-  <body>
-    <main class="legal" style="display:block;min-height:0">
-      <a class="brand" href="/"><img src="/brand/logo.svg" width="174" height="54" alt="Swoovr home" /></a>
-      <h1>Swoovr waitlist privacy notice</h1>
+<SiteLayout title="Website privacy notice" description="How RePass Cloud handles Swoovr website signups, contact and beta enquiries, and your analytics choices.">
+<article class="article-body legal-body">
+      <h1>Website privacy notice</h1>
       <p>Effective 18 October 2026</p>
-      <p>Swoovr is operated by <strong>RePass Cloud Pty Ltd</strong> (ABN 74 642 243 801), Findon, South Australia. This notice covers the public Swoovr website and launch waitlist at swoovr.com. It supplements our <a href="https://repasscloud.com/legal/privacy-policy/">company Privacy Policy</a>; this notice explains the specific handling of this waitlist.</p>
+      <p>Swoovr is operated by <strong>RePass Cloud Pty Ltd</strong> (ABN 74 642 243 801), Findon, South Australia. This notice covers the public Swoovr website, launch waitlist and enquiry forms at swoovr.com. It supplements our <a href="https://repasscloud.com/legal/privacy-policy/">company Privacy Policy</a>; this notice explains the specific handling of website signups and enquiries.</p>
       <h2>What you share and why</h2>
       <p>When you join, you provide your email address and confirm that you are 18 or over and want Swoovr launch updates. We record the time and version of that permission with your address. You can optionally share your city, indicate interest in beta testing and enter a friend’s referral code. We use these to plan local testing and record referral interest. We use it to manage the waitlist and tell you when Swoovr is ready. Joining does not create a dating profile or an app account, and does not subscribe you to other RePass Cloud marketing.</p>
       <h2>How we store your signup</h2>
       <p>Your browser sends the form to our Cloudflare Worker over HTTPS. The Worker encrypts your email, optional city, beta interest, submitted referral code, adult declaration and permission metadata before storing the record in our Supabase PostgreSQL database. Authorised RePass Cloud staff can decrypt it using a private key kept separately from the website and database. Encryption does not make your information anonymous.</p>
       <p>We also store a keyed email fingerprint to recognise repeat submissions without storing a readable email, a random personal sharing code for possible future use, submission and expiry dates, and operational consent/delivery states. These records remain personal information. A repeat signup doesn’t change the original details or restore withdrawn consent. Contact us to correct your information.</p>
       <p>Cloudflare and Supabase process information to host, secure and store the service, potentially outside Australia depending on the project region and provider operations. A successful signup means the database accepted a record, or recognised an existing registration. It does not verify email ownership. We do not currently send confirmation emails or personal referral codes automatically. Codes entered in the form are recorded only; they do not grant access or rewards.</p>
+      <h2>Contact and beta enquiries</h2>
+      <p>When you send an enquiry, we collect your name, email, message and permission to reply. Contact enquiries can include an organisation and topic. Beta enquiries can include your city, device, availability and adult declaration. We use these details to respond or discuss suitable beta tests; this is not marketing-list consent.</p>
+      <p>The Worker encrypts these details before storing them in a separate private database table. Only the enquiry type, random request identifier, notice version inside the encrypted record, creation time and expiry support handling. A successful response confirms database acceptance, not that a team member has read the message or that a beta place has been allocated. Simple suspected spam may be silently discarded.</p>
+      <p>We retain website enquiries for up to 12 months, or remove them sooner when no longer needed, subject to records needed to manage a request or legal obligation. Authorised staff handle access and removal requests. Don’t include sensitive personal details or identity documents in these forms.</p>
       <h2>Security and technical information</h2>
       <p>Cloudflare processes connection information, including your IP address and request metadata. We use the connecting IP to limit repeated submissions and a hidden form field to filter simple bots. We do not deliberately write submitted addresses, request bodies or encrypted signup records to application logs. Hosting and storage providers may keep operational and security records under their own retention settings.</p>
       <h2>Analytics and your choices</h2>
@@ -33,11 +25,8 @@ const analyticsEnabled = Object.values(config.googleAnalyticsMeasurementIds).som
       <p>Use “Your privacy choices” in the footer to allow or refuse optional analytics. We remember that choice in local storage in this browser. You can withdraw it at any time; declining does not prevent you joining the waitlist. We honour a browser Global Privacy Control signal by keeping optional analytics off. Your browser may also let you block or delete cookies and local storage.</p>
       <h2>Retention, removal and contact</h2>
       <p>We keep waitlist records until launch communication is complete, you ask to leave, or 12 months after signup, whichever comes first. We will seek renewed permission if we need to continue beyond that period. Removal from the active waitlist is handled by our team; operational backups and legally necessary records may remain for a limited period under the company policy.</p>
-      <p>To leave the list, request access, correction or deletion, or raise a privacy concern, email <a href="mailto:hello@repasscloud.com?subject=Swoovr%20waitlist%20privacy">hello@repasscloud.com</a> from the address you used and mention “Swoovr waitlist”. Before any future email campaign, we will provide a working unsubscribe route and check the suppression list at send time. We may need to verify a request before acting. Our company policy explains additional rights, international processing, complaints and how to contact the relevant privacy regulator.</p>
+      <p>To leave the list, request access, correction or deletion, or raise a privacy concern, use the <a href="/contact/?topic=privacy">contact form</a> or email <a href="mailto:hello@repasscloud.com?subject=Swoovr%20waitlist%20privacy">hello@repasscloud.com</a> from the address you used and mention “Swoovr waitlist”. Before any future email campaign, we will provide a working unsubscribe route and check the suppression list at send time. We may need to verify a request before acting. Our company policy explains additional rights, international processing, complaints and how to contact the relevant privacy regulator.</p>
       <h2>When the app launches</h2>
       <p>This notice covers the website and waitlist only. The Swoovr app will need its own privacy information before collecting account, profile, location, messaging or other app information. We will update this notice when website handling changes.</p>
       <p><a href="/">← Back to Swoovr</a></p>
-    </main>
-    <footer class="legal-footer"><a href="https://repasscloud.com/legal/privacy-policy/">RePass Cloud Privacy Policy</a><PrivacyChoices /></footer>
-  </body>
-</html>
+</article></SiteLayout>

@@ -6,7 +6,8 @@ Corporate/product website for **https://swoovr.com**, operated by RePass Cloud P
 
 ```sh
 npm ci
-npm run dev                  # static site, port 4321; signup API needs Worker
+npm run dev:review           # isolated local DB + forms, :4325; includes draft news
+npm run dev                  # Astro only; forms need a Worker
 npm run dev:worker           # build plus Worker, port 8787
 npm test
 ./deploy.sh --dry-run        # build, tests and packaging only; never uploads
@@ -28,7 +29,7 @@ Follow [the setup guide](notes/supabase-setup.md). Project creation choices:
 
 The Worker connects to PostgreSQL through Supabase's transaction pooler using a restricted insert-only role. No Supabase browser SDK, publishable key, service role key or public read policy is required.
 
-Production releases come from Cloudflare **Workers Builds**, linked to `repasscloud/swoovrcom-web`, production branch `main`. Build: `npm ci && npm run build && npm test`. Deploy: `npx wrangler deploy`. The local deploy helper does not upload or read local secrets. Keep preview deployments disabled because this Worker owns production routes.
+Production releases come from Cloudflare **Workers Builds**, linked to `repasscloud/swoovrcom-web`, production branch `main`. Build: `npm ci && npm run build && npm test`. Deploy: `npm run release` (migrations, then Worker upload). Set `MIGRATION_DATABASE_URL` as a build-only administrator direct/session-connection secret, separately from restricted runtime credentials. See [publishing and release guide](notes/corporate-site-guide.md). The local deploy helper does not upload or read local secrets. Keep preview deployments disabled because this Worker owns production routes.
 
 Only `swoovr.com/*` is configured. This is a distinct Worker name: never attach this repository's build to the old shared Worker. The owner must move the corporate hostname route from that Worker to the new one without changing the original application's route or deleting its Worker. Workers Builds must be used, rather than a static-only Pages build, because `/api/waitlist` runs server code.
 
@@ -62,3 +63,7 @@ Only the corporate Google Analytics stream `G-4RR4HKDZVP` is configured. Tags lo
 ## Verification
 
 Local unit/runtime tests cover API validation, encryption/decryption, failure handling, indexing and analytics consent. Run `npm run build` before `npm test`. Live Supabase, domain routing, GitHub build configuration and email campaigns require separate integration verification; local tests do not prove them.
+
+## Corporate pages and Markdown news
+
+See the [corporate site guide](notes/corporate-site-guide.md) for local review, draft publication, JSON social/city configuration, contact and beta data, and automatic deployment migrations. Five articles are drafts; production builds and sitemaps exclude them. `api/waitlist.openapi.json` now covers both encrypted signup and enquiry endpoints.

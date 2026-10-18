@@ -1,3 +1,5 @@
+> Corporate-site update, 18 October 2026: public product, trust, venue, beta and contact pages plus draft Markdown articles are prepared for local review. See [current site guide](../corporate-site-guide.md) and [marketing review](../marketing-site-review-2026-10-18.md). Older infrastructure snapshots below remain research history; the repository README and current guide describe implementation.
+
 # Swoovr pre-launch and go-to-market strategy
 
 > Implementation update, 18 October 2026: the corporate website now has a PostgreSQL signup implementation prepared locally. Descriptions of the old email-only/current shared infrastructure below are the earlier research snapshot. See [setup](../supabase-setup.md) and the repository README for the current contract and deployment status.

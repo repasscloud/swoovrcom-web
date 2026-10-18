@@ -1,9 +1,9 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "Swoovr waitlist",
-    "version": "2.0.0",
-    "description": "Same-origin encrypted PostgreSQL signup. No automatic email or ownership confirmation. Referrals are recorded without validation or access entitlements."
+    "title": "Swoovr website submissions API",
+    "version": "3.0.0",
+    "description": "Same-origin encrypted PostgreSQL newsletter signup and contact/beta enquiries. No automatic email, ownership confirmation or beta admission. Enquiry permission is separate from marketing consent."
   },
   "servers": [
     {
@@ -47,7 +47,23 @@
                   },
                   "city": {
                     "type": "string",
-                    "maxLength": 100
+                    "maxLength": 100,
+                    "enum": [
+                      "",
+                      "Adelaide",
+                      "Brisbane",
+                      "Canberra",
+                      "Darwin",
+                      "Gold Coast",
+                      "Hobart",
+                      "Melbourne",
+                      "Newcastle",
+                      "Perth",
+                      "Sunshine Coast",
+                      "Sydney",
+                      "Wollongong",
+                      "Other"
+                    ]
                   },
                   "betaInterest": {
                     "type": "boolean"
@@ -96,6 +112,173 @@
           },
           "503": {
             "description": "Missing/invalid database or encryption configuration, or limiter unavailable."
+          }
+        }
+      }
+    },
+    "/api/enquiries": {
+      "post": {
+        "summary": "Store an encrypted contact or beta enquiry",
+        "description": "Same-origin JSON only. Max body 16384 bytes. Reply permission is required; this never adds marketing consent. Beta also requires adult=true and a device. Three submissions per IP per minute. A requestId is idempotent: a duplicate never changes the first message. A 202 means durable acceptance/existing request or silent honeypot discard, not a reply or invitation. No email is sent.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "requestId",
+                  "kind",
+                  "name",
+                  "email",
+                  "message",
+                  "replyConsent"
+                ],
+                "properties": {
+                  "requestId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "Random v4 browser submission ID, preserved across retries."
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "contact",
+                      "beta"
+                    ]
+                  },
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "maxLength": 254
+                  },
+                  "message": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 3000
+                  },
+                  "replyConsent": {
+                    "type": "boolean",
+                    "enum": [
+                      true
+                    ]
+                  },
+                  "topic": {
+                    "type": "string",
+                    "enum": [
+                      "general",
+                      "venue",
+                      "press",
+                      "feedback",
+                      "privacy",
+                      "support"
+                    ],
+                    "default": "general"
+                  },
+                  "organisation": {
+                    "type": "string",
+                    "maxLength": 160
+                  },
+                  "city": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "enum": [
+                      "",
+                      "Adelaide",
+                      "Brisbane",
+                      "Canberra",
+                      "Darwin",
+                      "Gold Coast",
+                      "Hobart",
+                      "Melbourne",
+                      "Newcastle",
+                      "Perth",
+                      "Sunshine Coast",
+                      "Sydney",
+                      "Wollongong",
+                      "Other"
+                    ]
+                  },
+                  "device": {
+                    "type": "string",
+                    "enum": [
+                      "iOS",
+                      "Android",
+                      "Both",
+                      "Web"
+                    ]
+                  },
+                  "availability": {
+                    "type": "string",
+                    "maxLength": 200
+                  },
+                  "adult": {
+                    "type": "boolean"
+                  },
+                  "website": {
+                    "type": "string",
+                    "description": "Hidden honeypot; leave empty."
+                  }
+                },
+                "allOf": [
+                  {
+                    "if": {
+                      "properties": {
+                        "kind": {
+                          "const": "beta"
+                        }
+                      }
+                    },
+                    "then": {
+                      "required": [
+                        "adult",
+                        "device"
+                      ],
+                      "properties": {
+                        "adult": {
+                          "const": true
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted or existing request; no personal information returned."
+          },
+          "400": {
+            "description": "Invalid fields or missing permission."
+          },
+          "403": {
+            "description": "Wrong or missing Origin."
+          },
+          "405": {
+            "description": "Use POST; Allow header returned."
+          },
+          "413": {
+            "description": "Body exceeds 16384 bytes."
+          },
+          "415": {
+            "description": "Use application/json."
+          },
+          "429": {
+            "description": "Rate limited; Retry-After: 60."
+          },
+          "502": {
+            "description": "Encryption or storage not confirmed; retry with same requestId."
+          },
+          "503": {
+            "description": "Service not configured or temporarily unavailable."
           }
         }
       }

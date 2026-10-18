@@ -39,5 +39,8 @@
   ],
   "compatibility_flags": [
     "nodejs_compat"
-  ]
+  ],
+  "build": {
+    "command": "node scripts/worker-build.mjs"
+  }
 }

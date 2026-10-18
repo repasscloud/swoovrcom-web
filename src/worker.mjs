@@ -1,39 +1,14 @@
+import { json, readLimited, validEmail, isAllowedOrigin } from './http.mjs';
+import { handleEnquiry } from './enquiries.mjs';
+import publishedRoutes from './data/published-routes.json' with { type: 'json' };
+import config from '../site.config.json' with { type: 'json' };
 const ORIGINS = new Set(['https://swoovr.com']);
 import { encryptSignup, emailFingerprint } from './signup-crypto.mjs';
 const CONSENT = 'waitlist-2026-10-18';
 const MAX_BYTES = 4096;
-function json(status, error) {
-  return Response.json(error ? { ok: false, error } : { ok: true }, {
-    status, headers: { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', ...(status === 429 ? { 'Retry-After': '60' } : {}), ...(status === 405 ? { Allow: 'POST' } : {}) },
-  });
-}
-async function readLimited(request, maximum) {
-  if (Number(request.headers.get('content-length')) > maximum) throw new Error('too_large');
-  const reader = request.body?.getReader();
-  if (!reader) return '';
-  const chunks = []; let size = 0;
-  for (;;) {
-    const { value, done } = await reader.read();
-    if (done) break;
-    size += value.byteLength;
-    if (size > maximum) { await reader.cancel(); throw new Error('too_large'); }
-    chunks.push(value);
-  }
-  const bytes = new Uint8Array(size); let offset = 0;
-  for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength; }
-  return new TextDecoder().decode(bytes);
-}
-function validEmail(value) {
-  if (typeof value !== 'string' || value.length > 254 || /[^\x21-\x7e]/.test(value)) return false;
-  const parts = value.split('@');
-  if (parts.length !== 2 || parts[0].length > 64 || !parts[0] || parts[0].startsWith('.') || parts[0].endsWith('.') || parts[0].includes('..')) return false;
-  return /^[A-Za-z0-9.!#$%&'*+\/=?^_`{|}~-]+$/.test(parts[0]) && parts[1].length <= 253 && parts[1].includes('.') && parts[1].split('.').every(label => /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/i.test(label));
-}
 export async function handleWaitlist(request, env, store) {
   if (request.method !== 'POST') return json(405, 'Use POST.');
-  const origin = request.headers.get('origin');
-  const local = env.LOCAL_DEVELOPMENT === 'true' && ['http://localhost:8787', 'http://127.0.0.1:8787'].includes(origin);
-  if ((!ORIGINS.has(origin) && !local) || origin !== new URL(request.url).origin) return json(403, 'Please submit the form from this website.');
+  if (!isAllowedOrigin(request, env)) return json(403, 'Please submit the form from this website.');
   if (request.headers.get('content-type')?.split(';')[0].trim() !== 'application/json') return json(415, 'Use JSON.');
   if (!env.DATABASE_URL || !env.WAITLIST_DEDUPE_KEY || !env.WAITLIST_PUBLIC_KEY || !env.WAITLIST_RATE_LIMIT) return json(503, 'The waitlist is temporarily unavailable. Please try again later.');
   try {
@@ -49,7 +24,7 @@ export async function handleWaitlist(request, env, store) {
   if (!validEmail(email) || data.consent !== true) return json(400, 'Enter a valid email address and agree to receive Swoovr launch updates.');
   const referralCode = data.referralCode ?? '';
   const city = data.city ?? '';
-  if (typeof referralCode !== 'string' || referralCode.length > 64 || !/^[a-zA-Z0-9_-]*$/.test(referralCode) || typeof city !== 'string' || city.length > 100 || /[\x00-\x1f\x7f]/.test(city) || data.adult !== true || (data.betaInterest !== undefined && typeof data.betaInterest !== 'boolean')) {
+  if (typeof referralCode !== 'string' || referralCode.length > 64 || !/^[a-zA-Z0-9_-]*$/.test(referralCode) || typeof city !== 'string' || (city !== '' && !config.cities.includes(city)) || city.length > 100 || /[\x00-\x1f\x7f]/.test(city) || data.adult !== true || (data.betaInterest !== undefined && typeof data.betaInterest !== 'boolean')) {
     return json(400, 'Confirm you are 18 or over and check your city and referral code.');
   }
   let record;
@@ -83,7 +58,7 @@ function indexingResponse(request, origin, path) {
     const declaration = '<?xml version="1.0" encoding="UTF-8"?>';
     body = path === '/sitemap-index.xml'
       ? `${declaration}<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><sitemap><loc>${origin}/sitemap.xml</loc></sitemap></sitemapindex>`
-      : `${declaration}<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${['/', '/privacy/'].map(page => `<url><loc>${origin}${page}</loc></url>`).join('')}</urlset>`;
+      : `${declaration}<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${publishedRoutes.map(page => `<url><loc>${origin}${page}</loc></url>`).join('')}</urlset>`;
     contentType = 'application/xml; charset=utf-8';
   }
   return new Response(request.method === 'HEAD' ? null : body, { headers: { 'Content-Type': contentType, 'Cache-Control': 'public, max-age=300', 'X-Content-Type-Options': 'nosniff' } });
@@ -95,7 +70,8 @@ export default {
     const local = env.LOCAL_DEVELOPMENT === 'true' && ['localhost', '127.0.0.1'].includes(url.hostname);
     if (!ORIGINS.has(url.origin) && !local) return new Response('Not found', { status: 404 });
     const origin = ORIGINS.has(url.origin) ? url.origin : null;
-    if (['/sitemap.xml', '/sitemap-index.xml', '/robots.txt'].includes(path)) return indexingResponse(request, origin, path);
+    if (['/sitemap.xml', '/sitemap-index.xml', '/robots.txt'].includes(path)) return indexingResponse(request, origin || (local ? 'https://swoovr.com' : null), path);
+    if (path === '/api/enquiries') return handleEnquiry(request, env);
     if (path === '/api/waitlist') return handleWaitlist(request, env);
     if (path.startsWith('/api/')) return json(404, 'Not found.');
     const response = await env.ASSETS.fetch(request);

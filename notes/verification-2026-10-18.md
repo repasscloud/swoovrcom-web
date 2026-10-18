@@ -1,3 +1,21 @@
+# Corporate pages and enquiries — current local verification
+
+18 October 2026, `codex/corporate-pages-and-enquiries`.
+
+- Final production build: 10 sitemap pages plus the custom 404. All 24 unit/runtime checks pass. Wrangler dry-run packaging succeeds without database access or upload.
+- Browser-submitted newsletter, contact and beta forms each save successfully through the actual local Worker and restricted PostgreSQL role. Enquiry ciphertext was decrypted privately with the isolated local key and compared with synthetic test input.
+- Disposable PostgreSQL 18 checks cover fresh migration application, replay, checksums, transaction rollback, duplicate enquiry request IDs, denied reads/updates, legacy baseline adoption and refusal of deliberately weakened policies/constraints.
+- Temporarily publishing one draft locally produced its page, listing and sitemap manifest entry. Restoring draft mode removed them. All five final articles remain drafts. The production Worker returns 404 for draft paths; the Astro preview renders them with noindex metadata.
+- All ten production URLs return 200 through the local Worker with corporate metadata; its sitemap matches the actual build. Internal links and shared social/footer elements pass output checks.
+- Browser visual review uses real embedded 390px and 1280px viewports. Contact layout fits both; desktop navigation now has an opaque background so moving portraits do not compromise readability. Local screenshots are in ignored `artifacts/review/`. The contact-topic query is handled in the browser so venue/privacy links work on static pages.
+- Independent code review found two issues, both corrected and re-reviewed: no migrations from a dry-run build hook, and exact rather than substring-based legacy baseline verification.
+
+Local review is running on 4325, production-build preview on 8795, with an isolated database on 55439. Existing app preview ports 4321/8787 were preserved. No production data, secrets, remote settings, routes, deployment or main push was changed. Live Cloudflare-to-Supabase TLS/insertion and hosted release configuration remain unverified. Before eventual deployment, set the Cloudflare deploy command to `npm run release` and add the build-only `MIGRATION_DATABASE_URL` secret. Enquiry notification delivery and an admin inbox are outside this implementation; the authorised team must monitor database enquiries.
+
+The earlier implementation snapshot follows for provenance.
+
+---
+
 # Corporate-site verification
 
 18 October 2026, local implementation on `codex/corporate-site-supabase`.

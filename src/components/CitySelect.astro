@@ -1,0 +1,6 @@
+---
+import config from '../../site.config.json';
+const { id = 'city' } = Astro.props;
+---
+<label for={id}>Your city <span>(optional)</span></label>
+<select id={id} name="city" autocomplete="address-level2"><option value="">Select your city</option>{config.cities.map(city=><option value={city}>{city}</option>)}</select>

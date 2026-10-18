@@ -35,9 +35,10 @@ test('Cloudflare runtime rewrites HTML per hostname without redirects or touchin
 });
 
 test('built public pages have corporate canonical metadata', () => {
-  for (const [name, path] of [['index', '/'], ['privacy', '/privacy/']]) {
-    const source = readFileSync(`src/pages/${name}.astro`, 'utf8');
-    assert.ok(source.includes(`rel="canonical" href="https://swoovr.com${path}"`));
-
+  const routes = JSON.parse(readFileSync('src/data/published-routes.json','utf8'));
+  for (const route of routes) {
+    const html = readFileSync(`dist${route}index.html`,'utf8');
+    assert.ok(html.includes(`rel="canonical" href="https://swoovr.com${route}"`),route);
+    assert.ok(!html.includes('Draft preview'),route);
   }
 });

@@ -1,0 +1,42 @@
+---
+import CitySelect from './CitySelect.astro';
+const { kind = 'contact' } = Astro.props;
+const beta = kind === 'beta';
+const topics = [['general','General enquiry'],['venue','Venue partnership'],['press','Press & media'],['feedback','Product feedback'],['privacy','Privacy & data request'],['support','Support & safety concern']];
+---
+<form class="enquiry-form" data-enquiry-form data-kind={kind} action="/api/enquiries" method="post">
+ <div class="form-grid"><div><label for="enquiry-name">Name</label><input id="enquiry-name" name="name" autocomplete="name" maxlength="100" required /></div><div><label for="enquiry-email">Email</label><input id="enquiry-email" name="email" type="email" autocomplete="email" maxlength="254" required /></div>
+ {beta ? <><div><CitySelect id="enquiry-city" /></div><div><label for="device">Your device</label><select id="device" name="device" required><option value="">Select your device</option><option>iOS</option><option>Android</option><option>Both</option><option>Web</option></select></div></> : <><div><label for="organisation">Organisation <span>(optional)</span></label><input id="organisation" name="organisation" autocomplete="organization" maxlength="160" /></div><div><label for="topic">What brings you here?</label><select name="topic" id="topic">{topics.map(([value,label])=><option value={value}>{label}</option>)}</select></div></>}
+ </div>
+ {beta && <><label for="availability">When could you take part? <span>(optional)</span></label><input name="availability" id="availability" maxlength="200" placeholder="For example, a few evenings a month" /></>}
+ <label for="message">{beta ? 'What would you like Swoovr to do better?' : 'Tell us a little more'}</label><textarea name="message" id="message" rows="6" minlength="10" maxlength="3000" required placeholder={beta ? 'Tell us what matters to you when meeting people, and what you’d like to help test.' : 'What would you like to discuss, and how can we help?'}></textarea>
+ <p class="field-help">Please leave out identity documents, exact addresses and sensitive personal details.</p>
+ {beta && <label class="consent-row"><input type="checkbox" name="adult" required /><span>I’m 18 or over.</span></label>}
+ <label class="consent-row"><input type="checkbox" name="replyConsent" required /><span>{beta ? 'I agree that Swoovr can use these details to contact me about beta participation.' : 'I agree that Swoovr can use these details to respond to my enquiry.'} <a href="/privacy/">Privacy notice</a>.</span></label>
+ <p class="field-help">This form doesn’t subscribe you to marketing emails.</p>
+ <div class="form-trap" aria-hidden="true"><label for="enquiry-website">Leave empty</label><input id="enquiry-website" name="website" tabindex="-1" autocomplete="off" /></div>
+ <button class="button" type="submit">{beta ? 'Register beta interest' : 'Send enquiry'} <span aria-hidden="true">↗</span></button><p class="form-status" role="status" aria-live="polite"></p><noscript><p>Enable JavaScript to send this form, or email hello@repasscloud.com with “Swoovr” in the subject.</p></noscript>
+</form>
+<script>
+ document.querySelectorAll<HTMLFormElement>('[data-enquiry-form]').forEach(form => {
+  let requestId = crypto.randomUUID();
+  const topic = form.querySelector<HTMLSelectElement>('select[name="topic"]');
+  const requestedTopic = new URL(window.location.href).searchParams.get('topic');
+  if (topic && requestedTopic && Array.from(topic.options).some(option => option.value === requestedTopic)) topic.value = requestedTopic;
+  form.addEventListener('input', () => { requestId = crypto.randomUUID(); });
+  const button = form.querySelector<HTMLButtonElement>('button[type="submit"]')!;
+  const status = form.querySelector<HTMLElement>('[role="status"]')!;
+  const label = button.textContent;
+  form.addEventListener('submit', async event => {
+   event.preventDefault(); if (!form.reportValidity() || button.disabled) return;
+   const fields = new FormData(form); button.disabled = true; button.textContent = 'Sending…'; form.setAttribute('aria-busy','true'); status.textContent = '';
+   try {
+    const body = { ...Object.fromEntries(fields), requestId, kind: form.dataset.kind, adult: fields.get('adult') === 'on', replyConsent: fields.get('replyConsent') === 'on' };
+    const response = await fetch('/api/enquiries', {method:'POST',headers:{'Content-Type':'application/json'},signal:AbortSignal.timeout(20000),body:JSON.stringify(body)});
+    const result = await response.json(); if (!response.ok || !result.ok) throw new Error(result.error || 'Your message could not be saved. Please try again.');
+    form.reset(); requestId = crypto.randomUUID(); status.textContent = form.dataset.kind === 'beta' ? 'Thanks for putting your hand up. Your beta interest is registered, and the team will follow up about suitable testing opportunities.' : 'Thanks for getting in touch. Your enquiry is saved for the Swoovr team.';
+   } catch(error) { status.textContent = error instanceof Error && !['TypeError','TimeoutError','SyntaxError'].includes(error.name) ? error.message : 'Your message could not be confirmed. Please try again, or email hello@repasscloud.com with “Swoovr” in the subject.'; }
+   finally { button.disabled=false; button.textContent=label; form.removeAttribute('aria-busy'); }
+  });
+ });
+</script>

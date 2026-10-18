@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import worker from '../src/worker.mjs';
+import routes from '../src/data/published-routes.json' with {type:'json'};
 for (const origin of ['https://swoovr.com']) {
   test(`${origin} publishes its own sitemap and robots directive`, async () => {
     const response = await worker.fetch(new Request(origin + '/sitemap.xml'), {});
@@ -9,7 +10,9 @@ for (const origin of ['https://swoovr.com']) {
     const xml = await response.text();
     assert.ok(xml.includes(`<loc>${origin}/</loc>`));
     assert.ok(xml.includes(`<loc>${origin}/privacy/</loc>`));
-    assert.equal((xml.match(/<url>/g) || []).length, 2);
+    assert.equal((xml.match(/<url>/g) || []).length, routes.length);
+    for(const route of routes) assert.ok(xml.includes(`<loc>${origin}${route}</loc>`));
+    assert.ok(!xml.includes('why-we-are-building-swoovr'));
     const index = await worker.fetch(new Request(origin + '/sitemap-index.xml'), {});
     assert.ok((await index.text()).includes(`<loc>${origin}/sitemap.xml</loc>`));
     const robots = await worker.fetch(new Request(origin + '/robots.txt'), {});

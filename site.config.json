@@ -1,5 +1,50 @@
 {
   "googleAnalyticsMeasurementIds": {
     "swoovr.com": "G-4RR4HKDZVP"
-  }
+  },
+  "cities": [
+    "Adelaide",
+    "Brisbane",
+    "Canberra",
+    "Darwin",
+    "Gold Coast",
+    "Hobart",
+    "Melbourne",
+    "Newcastle",
+    "Perth",
+    "Sunshine Coast",
+    "Sydney",
+    "Wollongong",
+    "Other"
+  ],
+  "socials": [
+    {
+      "name": "X",
+      "icon": "x",
+      "url": "https://x.com/swoovrapp"
+    },
+    {
+      "name": "Instagram",
+      "icon": "instagram",
+      "url": "https://www.instagram.com/swoovr.app/"
+    },
+    {
+      "name": "LinkedIn",
+      "icon": "linkedin",
+      "url": "#",
+      "placeholder": true
+    },
+    {
+      "name": "TikTok",
+      "icon": "tiktok",
+      "url": "#",
+      "placeholder": true
+    },
+    {
+      "name": "Facebook",
+      "icon": "facebook",
+      "url": "#",
+      "placeholder": true
+    }
+  ]
 }

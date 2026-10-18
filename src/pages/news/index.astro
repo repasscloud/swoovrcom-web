@@ -1,0 +1,8 @@
+---
+import { getCollection } from 'astro:content';
+import SiteLayout from '../../layouts/SiteLayout.astro';
+const entries = (await getCollection('news', ({data}) => import.meta.env.DEV || !data.draft)).sort((a,b) => b.data.date.valueOf()-a.data.date.valueOf());
+---
+<SiteLayout title="News & stories" description="Product thinking, community stories and updates from the Swoovr team." eyebrow="News & stories" heading="The thinking behind the connection." intro="Product notes, community perspectives and the decisions shaping Swoovr.">
+ {entries.length ? <section class="news-list">{entries.map(entry=><article><p class="eyebrow">{entry.data.category}{entry.data.draft && ' · Draft preview'}</p><time datetime={entry.data.date.toISOString().slice(0,10)}>{entry.data.date.toLocaleDateString('en-AU',{day:'numeric',month:'long',year:'numeric',timeZone:'Australia/Adelaide'})}</time><h2><a href={`/news/${entry.id}/`}>{entry.data.title}</a></h2><p>{entry.data.description}</p><a class="text-link" href={`/news/${entry.id}/`}>Read the story ↗</a></article>)}</section> : <section class="editorial-split"><h2>Follow the story<br />from the beginning.</h2><div><p>This is the home for Swoovr’s product updates and stories from the community. In the meantime, get to know the ideas guiding the experience.</p><div class="link-stack"><a href="/about/">Why we’re building Swoovr ↗</a><a href="/how-it-works/">How the experience comes together ↗</a><a href="/venues/">A place for real-world connections ↗</a></div></div></section>}
+</SiteLayout>

@@ -12,6 +12,8 @@ References: [Supabase data security](https://supabase.com/docs/guides/database/s
 
 ## 2. Apply schema once
 
+**Current release update:** use the [migration runner](corporate-site-guide.md#automatic-database-migrations-at-deployment) for new installations and subsequent deployment migrations. The SQL-editor instructions below describe the original baseline only. The runner can validate and adopt that baseline without rerunning it.
+
 In the project's SQL editor, run `supabase/migrations/202610180001_waitlist.sql` from this repository as the project database administrator. It creates a private schema, encrypted signup table, unique email fingerprint and random sharing codes, plus an insert-only `swoovr_signup` login role. It deliberately provides no SELECT/UPDATE/DELETE permission to the website role. Do not rerun a successful migration; use a new migration for changes.
 
 Set the restricted role's password separately in a private SQL editor session:
@@ -41,7 +43,8 @@ Only public encryption material belongs in `wrangler.jsonc`. No secret is needed
 Create/select **swoovr-com-web** under Cloudflare Workers & Pages, then connect the GitHub repository `repasscloud/swoovrcom-web` using Workers Builds. Use `main` as production branch, repository root as root directory and Node 22.12+.
 
 - Build command: `npm ci && npm run build && npm test`
-- Deploy command: `npx wrangler deploy`
+- Deploy command: `npm run release`
+- Build-only secret: `MIGRATION_DATABASE_URL` (administrator direct/session connection, separate from runtime credentials)
 - Runtime secrets: `DATABASE_URL`, `WAITLIST_DEDUPE_KEY`
 - Runtime public key: existing `WAITLIST_PUBLIC_KEY` in the checked-in configuration
 - Preview/non-production deploys: disable, because this configuration owns the production hostname route
