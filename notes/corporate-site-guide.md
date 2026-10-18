@@ -54,3 +54,9 @@ References checked: [Cloudflare build configuration](https://developers.cloudfla
 The home header and signup fill the first viewport, with a compact mobile menu and a side-by-side layout for short landscape windows. Email and optional city share one row. Neither homepage nor referral signup shows a beta-interest checkbox; beta enquiries remain a separate page. Motion controls and the illustrative-photo caption sit directly on the collage. Content can expand naturally for enlarged text or form errors; nothing is clipped to force a fixed height.
 
 `/referral/` uses “found a code” language and requires email, referral code, adult declaration and permission for launch updates. A shareable `?code=...` can prefill an allowlisted code; it is never sent to analytics. This remains encrypted interest registration: codes are recorded, not redeemed or validated for app admission. Existing first-registration preservation still applies.
+
+## Navigation, buttons and referral appearance
+
+Signup and action buttons use label-sized widths without decorative arrows. The shared header returns as a fixed bar after its original position has scrolled away; its normal space is reserved to avoid shifting the page. On the homepage the fixed bar offers About/FAQs section links, with anchor clearance below the header. Every page has a compact mobile menu. Reduced-motion preference disables the header's entrance animation, and keyboard Skip to content remains above the fixed bar.
+
+Only `/referral/` uses the owner-specified gold `#d0b786`, silver `#c1c1c1`, gun grey `#454545` and premium blue `#1e3857`. The header/footer wordmark is tinted using a CSS mask over the existing canonical SVG; the page favicon derives from the master bird path in `branding/source/geometry.json`. Other pages retain their violet identity. No brand geometry was hand-edited.

@@ -2,8 +2,9 @@
 import SiteLayout from '../layouts/SiteLayout.astro';
 import SignupForm from '../components/SignupForm.astro';
 import '../styles/signup.css';
+import '../styles/referral.css';
 ---
-<SiteLayout title="Found a code?" description="Spotted a Swoovr code? Follow the trail and register your early interest." eyebrow="You followed the trail" heading="Some things are worth finding." intro="A code from a friend. A clue out in the wild. However you found your way here, bring your code and get in early on the Swoovr story.">
+<SiteLayout theme="referral" title="Found a code?" description="Spotted a Swoovr code? Follow the trail and register your early interest." eyebrow="You followed the trail" heading="Some things are worth finding." intro="A code from a friend. A clue out in the wild. However you found your way here, bring your code and get in early on the Swoovr story.">
   <section class="referral-panel" aria-label="Register with a referral code">
     <SignupForm referral />
     <p>A little curiosity goes a long way. Register your code and email to be part of the story from the beginning.</p>

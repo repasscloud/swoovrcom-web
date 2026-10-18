@@ -38,3 +38,9 @@ The compact homepage and its complete signup, launch consent, sign-off and photo
 The dedicated `/referral/` form accepts a code, email, adult declaration and launch-update permission, with no beta checkbox. A shareable code prefill and browser submission were verified against the isolated local database; encrypted data retained the submitted code and did not opt into beta interest. The compact homepage signup also saved successfully. Neither test sent email or used the hosted database.
 
 The final build contains 11 sitemap pages plus the custom 404. All 26 tests and Wrangler dry-run packaging pass. The temporary viewport-review page was removed before the final build. The new viewport measurements and desktop/mobile screenshots are in ignored `artifacts/review/`. Nothing was pushed or deployed.
+
+## Buttons, scroll header and referral theme follow-up
+
+Browser checks confirm the homepage action is approximately 159px wide inside a 490px form at desktop sizes; referral registration is approximately 200px wide inside a 580px form. Decorative button arrows are removed. The referral background and logo computed colours match `#1e3857` and `#d0b786`; navigating home restores its original branding.
+
+The shared header remains fixed at viewport top after scrolling on the homepage and referral page. Desktop About and FAQs anchors clear the header, and the mobile menu closes after selecting a section. Keyboard Tab visibly focuses Skip to content above the header (z-index 100 vs 30). All 13 previously recorded hero viewport sizes still fit with the updated header and buttons. Local screenshots and refreshed measurements are under ignored `artifacts/review/`.

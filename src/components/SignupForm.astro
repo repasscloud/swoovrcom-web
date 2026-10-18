@@ -10,7 +10,7 @@ const { referral = false } = Astro.props;
   <label class="signup-consent"><input type="checkbox" name="adult" required /><span>I’m 18 or over.</span></label>
   <label class="signup-consent"><input type="checkbox" name="consent" required /><span>I agree to receive Swoovr launch updates from RePass Cloud. <a href="/privacy/">Privacy notice</a>.</span></label>
   <div class="form-trap" aria-hidden="true"><label for="signup-website">Leave this empty</label><input id="signup-website" name="website" tabindex="-1" autocomplete="off" /></div>
-  <button type="submit" class="signup-submit">{referral ? 'Register with your code' : 'Get early updates'} <span aria-hidden="true">↗</span></button>
+  <button type="submit" class="signup-submit">{referral ? 'Register with your code' : 'Get early updates'}</button>
   <p class="form-status" role="status" aria-live="polite"></p>
   <noscript><p>Enable JavaScript to register your interest.</p></noscript>
 </form>

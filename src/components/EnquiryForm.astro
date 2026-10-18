@@ -15,7 +15,7 @@ const topics = [['general','General enquiry'],['venue','Venue partnership'],['pr
  <label class="consent-row"><input type="checkbox" name="replyConsent" required /><span>{beta ? 'I agree that Swoovr can use these details to contact me about beta participation.' : 'I agree that Swoovr can use these details to respond to my enquiry.'} <a href="/privacy/">Privacy notice</a>.</span></label>
  <p class="field-help">This form doesn’t subscribe you to marketing emails.</p>
  <div class="form-trap" aria-hidden="true"><label for="enquiry-website">Leave empty</label><input id="enquiry-website" name="website" tabindex="-1" autocomplete="off" /></div>
- <button class="button" type="submit">{beta ? 'Register beta interest' : 'Send enquiry'} <span aria-hidden="true">↗</span></button><p class="form-status" role="status" aria-live="polite"></p><noscript><p>Enable JavaScript to send this form, or email hello@repasscloud.com with “Swoovr” in the subject.</p></noscript>
+ <button class="button" type="submit">{beta ? 'Register beta interest' : 'Send enquiry'}</button><p class="form-status" role="status" aria-live="polite"></p><noscript><p>Enable JavaScript to send this form, or email hello@repasscloud.com with “Swoovr” in the subject.</p></noscript>
 </form>
 <script>
  document.querySelectorAll<HTMLFormElement>('[data-enquiry-form]').forEach(form => {

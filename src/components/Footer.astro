@@ -1,8 +1,9 @@
 ---
+import Brand from './Brand.astro';
 import PrivacyChoices from './PrivacyChoices.astro';
 import SocialLinks from './SocialLinks.astro';
 ---
 <footer class="site-footer">
- <div class="footer-top"><div><a class="brand" href="/"><img src="/brand/logo.svg" alt="Swoovr" width="174" height="54" /></a><p>Your kind of connection.<br />Starting in Adelaide. Made for possibility.</p><SocialLinks /></div><nav aria-label="Footer navigation"><a href="/about/">About Swoovr</a><a href="/how-it-works/">How it works</a><a href="/safety/">Safety</a><a href="/verification/">Verification</a><a href="/venues/">For venues</a><a href="/beta/">Beta community</a><a href="/news/">News & stories</a><a href="/contact/">Contact</a></nav></div>
+ <div class="footer-top"><div><Brand /><p>Your kind of connection.<br />Starting in Adelaide. Made for possibility.</p><SocialLinks /></div><nav aria-label="Footer navigation"><a href="/about/">About Swoovr</a><a href="/how-it-works/">How it works</a><a href="/safety/">Safety</a><a href="/verification/">Verification</a><a href="/venues/">For venues</a><a href="/beta/">Beta community</a><a href="/news/">News & stories</a><a href="/contact/">Contact</a></nav></div>
  <div class="footer-bottom"><p>© {new Date().getFullYear()} Swoovr · <a href="https://repasscloud.com/">RePass Cloud Pty Ltd</a></p><a href="/privacy/">Privacy</a><PrivacyChoices /></div>
 </footer>

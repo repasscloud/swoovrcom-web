@@ -1,12 +1,41 @@
 ---
+import Brand from './Brand.astro';
+import '../styles/header.css';
 const path = Astro.url.pathname;
-const { compact = false } = Astro.props;
 const links = [['/how-it-works/', 'How it works'], ['/safety/', 'Safety'], ['/venues/', 'Venues'], ['/news/', 'News'], ['/contact/', 'Contact']];
+const sections = path === '/' ? [['/#about','About'],['/#questions','FAQs']] : [];
 ---
 {import.meta.env.DEV && import.meta.env.SWOOVR_LOCAL_REVIEW === 'true' && <div class="local-review-banner">Local review · draft articles are visible · forms save only to this computer</div>}
 <a class="skip-link" href="#main-content">Skip to content</a>
-<header class="site-header">
- <a href="/" class="brand" aria-label="Swoovr home"><img src="/brand/logo.svg" alt="Swoovr" width="174" height="54" /></a>
- <nav class="desktop-nav" aria-label="Main navigation">{links.map(([url,label])=><a href={url} aria-current={path === url ? 'page' : undefined}>{label}</a>)}<a class="nav-cta" href="/beta/" aria-current={path === '/beta/' ? 'page' : undefined}>Join the beta <span aria-hidden="true">↗</span></a></nav>
-{compact && <details class="mobile-nav"><summary>Menu <span aria-hidden="true">☰</span></summary><nav aria-label="Mobile navigation">{links.map(([url,label])=><a href={url}>{label}</a>)}<a href="/beta/">Join the beta ↗</a></nav></details>}
+<div class="site-header-slot" data-header-slot>
+<header class="site-header" data-site-header>
+ <Brand />
+ <nav class="desktop-nav" aria-label="Main navigation">{sections.map(([url,label])=><a class="section-jump" href={url}>{label}</a>)}{links.map(([url,label])=><a href={url} aria-current={path === url ? 'page' : undefined}>{label}</a>)}<a class="nav-cta" href="/beta/" aria-current={path === '/beta/' ? 'page' : undefined}>Join the beta</a></nav>
+ <details class="mobile-nav"><summary>Menu <span aria-hidden="true">☰</span></summary><nav aria-label="Mobile navigation">{sections.map(([url,label])=><a href={url}>{label}</a>)}{links.map(([url,label])=><a href={url} aria-current={path === url ? 'page' : undefined}>{label}</a>)}<a href="/beta/">Join the beta</a></nav></details>
 </header>
+</div>
+<script>
+ const header = document.querySelector<HTMLElement>('[data-site-header]');
+ const slot = document.querySelector<HTMLElement>('[data-header-slot]');
+ if(header && slot){
+   let scheduled = false;
+   const measure = () => {
+     if(!header.classList.contains('is-docked')) slot.style.height = `${header.offsetHeight}px`;
+   };
+   const update = () => {
+     scheduled = false;
+     const docked = slot.getBoundingClientRect().bottom <= 0;
+     header.classList.toggle('is-docked',docked);
+     if(!docked) measure();
+   };
+   measure(); update();
+   new ResizeObserver(measure).observe(header);
+   window.addEventListener('scroll',() => {
+     if(!scheduled){scheduled=true;window.requestAnimationFrame(update);}
+   },{passive:true});
+   window.addEventListener('resize',update);
+   header.querySelectorAll('a').forEach(link=>link.addEventListener('click',()=>{
+     header.querySelectorAll<HTMLDetailsElement>('details').forEach(menu=>menu.open=false);
+   }));
+ }
+</script>
