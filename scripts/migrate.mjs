@@ -74,12 +74,21 @@ async function verifyLegacyBaseline(client) {
  if (JSON.stringify(names)!==JSON.stringify(expected) || !schemaMatches || policies !== 1 || !requiredNotNull || !Object.values(checks.rows[0]).every(Boolean)) throw new Error('Existing signup schema differs from the original baseline; review before deployment.');
 }
 
-export async function runMigrations(env = process.env) {
+export function migrationConnectionOptions(env = process.env) {
  if (!env.MIGRATION_DATABASE_URL) throw new Error('Set the build-only MIGRATION_DATABASE_URL secret using an administrator direct/session connection.');
  const url = new URL(env.MIGRATION_DATABASE_URL);
  if (url.port === '6543') throw new Error('Migrations require a direct or session connection, not a transaction pooler.');
  const local = env.LOCAL_DEVELOPMENT === 'true' && ['localhost','127.0.0.1'].includes(url.hostname);
- const client = new pg.Client({connectionString:env.MIGRATION_DATABASE_URL,ssl:local ? false : {rejectUnauthorized:true},connectionTimeoutMillis:10000});
+ // pg connection-string SSL parameters override the explicit ssl object.
+ // Keep verification and the configured CA authoritative for migrations.
+ for (const key of ['sslmode','sslcert','sslkey','sslrootcert','ssl','uselibpqcompat']) url.searchParams.delete(key);
+ const ssl = {rejectUnauthorized:true};
+ if (env.MIGRATION_DATABASE_CA) ssl.ca = env.MIGRATION_DATABASE_CA;
+ return {connectionString:url.toString(),ssl:local ? false : ssl,connectionTimeoutMillis:10000};
+}
+
+export async function runMigrations(env = process.env) {
+ const client = new pg.Client(migrationConnectionOptions(env));
  try { await client.connect(); await migrate(client); }
  finally { await client.end(); }
 }

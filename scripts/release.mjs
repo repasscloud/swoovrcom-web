@@ -19,8 +19,8 @@ export function migrationFailure(error) {
   'ENOTFOUND':'database hostname could not be resolved',
   'ECONNREFUSED':'database connection was refused',
   'ETIMEDOUT':'database connection timed out',
-  'SELF_SIGNED_CERT_IN_CHAIN':'database TLS certificate chain is not trusted',
-  'UNABLE_TO_VERIFY_LEAF_SIGNATURE':'database TLS certificate could not be verified',
+  'SELF_SIGNED_CERT_IN_CHAIN':'database TLS certificate chain is not trusted; set the build-only MIGRATION_DATABASE_CA to the PEM certificate downloaded from Supabase Database Settings',
+  'UNABLE_TO_VERIFY_LEAF_SIGNATURE':'database TLS certificate could not be verified; check the build-only MIGRATION_DATABASE_CA certificate',
   '42P01':'a required database table is missing',
  };
  if (reasons[error?.code]) return `Migration failed [${error.code}]: ${reasons[error.code]}. Worker was not published.`;

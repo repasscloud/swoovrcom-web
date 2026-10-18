@@ -83,3 +83,7 @@ npx wrangler deployments list --name swoovr-com-web
 ```
 
 `secret put` publishes a Worker version immediately. Supply the restricted signup connection for `DATABASE_URL` and preserve the existing deduplication key. These commands do not create build secrets; never use them for `MIGRATION_DATABASE_URL`. The public encryption key, route and rate limiter are already defined in wrangler.jsonc.
+
+### Supabase certificate trust for migrations
+
+If a build reports SELF_SIGNED_CERT_IN_CHAIN, download the server root CA certificate from Supabase → Database → Settings → SSL Configuration → Download certificate. In Cloudflare → Worker Settings → Builds → Variables and secrets, add `MIGRATION_DATABASE_CA` containing the complete PEM certificate, including BEGIN/END CERTIFICATE lines. It can be a build variable (the certificate is public) or a build secret. The migration client uses it as a trusted CA while retaining certificate and hostname verification. Do not set NODE_TLS_REJECT_UNAUTHORIZED=0 or disable verification. URL SSL parameters cannot override this migration TLS configuration. No runtime secret is needed for this migration-only setting.
