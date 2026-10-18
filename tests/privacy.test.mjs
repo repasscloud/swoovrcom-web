@@ -4,14 +4,14 @@ import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 const source = readFileSync(new URL('../src/components/PrivacyChoices.astro', import.meta.url), 'utf8').match(/<script[^>]*>([\s\S]*?)<\/script>/)[1];
 function fixture(stored = null, gpc = false, hostname = 'swoovr.com') {
-  const callbacks = {}; const scripts = []; const cookies = []; let reloads = 0; let choice = stored;
-  const elements = Object.fromEntries(['privacy-panel','privacy-allow','privacy-deny','open'].map(id => [id, { hidden: true, focus() {}, addEventListener: (event, fn) => { callbacks[id] = fn; } }]));
+  const callbacks = {}; const scripts = []; const cookies = []; const focusCalls = []; let reloads = 0; let choice = stored;
+  const elements = Object.fromEntries(['privacy-panel','privacy-allow','privacy-deny','open'].map(id => [id, { hidden: true, focus(options) { focusCalls.push({ id, options }); }, addEventListener: (event, fn) => { callbacks[id] = fn; } }]));
   const document = { getElementById: id => elements[id], querySelector: () => elements.open, createElement: () => ({}), head: { appendChild: script => scripts.push(script.src) } };
   Object.defineProperty(document, 'cookie', { get: () => '_ga=old; _ga_TEST=old', set: value => cookies.push(value) });
   const context = { gaIds: { 'swoovr.com': 'G-COM123' }, document, navigator: { globalPrivacyControl: gpc }, location: { origin: 'https://' + hostname, pathname: '/', hostname, reload: () => reloads++ }, localStorage: { getItem: () => choice, setItem: (_, value) => { choice = value; } }, Date, encodeURIComponent };
   context.window = { addEventListener() {} };
   vm.runInNewContext(source, context);
-  return { scripts, callbacks, cookies, elements, context, get reloads() { return reloads; }, get choice() { return choice; } };
+  return { scripts, callbacks, cookies, focusCalls, elements, context, get reloads() { return reloads; }, get choice() { return choice; } };
 }
 test('analytics makes no tag request before affirmative consent or on refusal', () => {
   const f = fixture(); assert.deepEqual(f.scripts, []); assert.equal(f.elements['privacy-panel'].hidden, false);
@@ -46,4 +46,17 @@ test('analytics selects the serving hostname and never falls back to another str
   assert.equal(fixture('granted').scripts[0], 'https://www.googletagmanager.com/gtag/js?id=G-COM123');
   assert.equal(fixture('granted', false, 'swoovr.com').scripts[0], 'https://www.googletagmanager.com/gtag/js?id=G-COM123');
   assert.equal(fixture('granted', false, 'localhost').scripts.length, 0);
+});
+
+test('privacy decisions restore keyboard focus without scrolling to the footer', () => {
+  for (const action of ['privacy-allow', 'privacy-deny']) {
+    const f = fixture();
+    f.callbacks[action]();
+    assert.equal(f.elements['privacy-panel'].hidden, true);
+    assert.equal(f.focusCalls.at(-1).id, 'open');
+    assert.equal(f.focusCalls.at(-1).options?.preventScroll, true);
+  }
+  const f = fixture('denied');
+  f.callbacks.open();
+  assert.equal(f.focusCalls.at(-1).options?.preventScroll, true);
 });

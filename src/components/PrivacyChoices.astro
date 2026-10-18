@@ -50,12 +50,12 @@ const hasAnalytics = Object.keys(gaIds).length > 0;
   if (gpc) { save('denied'); clearAnalyticsCookies(); }
   else if (choice === 'granted') load();
   else if (choice !== 'denied') panel.hidden = false;
-  open?.addEventListener('click', () => { panel.hidden = false; (document.getElementById('privacy-allow') || document.getElementById('privacy-deny'))?.focus(); });
-  document.getElementById('privacy-allow')?.addEventListener('click', () => { save('granted'); load(); panel.hidden = true; open?.focus(); });
+  open?.addEventListener('click', () => { panel.hidden = false; (document.getElementById('privacy-allow') || document.getElementById('privacy-deny'))?.focus({ preventScroll: true }); });
+  document.getElementById('privacy-allow')?.addEventListener('click', () => { save('granted'); load(); panel.hidden = true; open?.focus({ preventScroll: true }); });
   document.getElementById('privacy-deny')?.addEventListener('click', () => {
     save('denied');
     if (gaId) window['ga-disable-' + gaId] = true;
-    clearAnalyticsCookies(); panel.hidden = true; open?.focus();
+    clearAnalyticsCookies(); panel.hidden = true; open?.focus({ preventScroll: true });
     // Unload already-running tags after consent withdrawal.
     if (loaded) location.reload();
   });
