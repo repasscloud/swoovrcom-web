@@ -37,7 +37,7 @@ Enquiries expire after 12 months. Extend the existing administrative retention j
 
 ## Automatic database migrations at deployment
 
-Set the Cloudflare Workers Builds **deploy command to `npm run release`**. The runner applies pending migrations on `main` before uploading. Keep the build command **`npm ci && npm run build && npm test`**. Disable non-production deploys. The release runner requires Workers Builds and branch `main`, applies pending migrations, then invokes Wrangler. Migration failure stops the upload. The checked-in Wrangler build guard refuses direct CI uploads that bypass this runner. Local development and dry-run packaging never invoke migrations. A direct CI dry run without the runner marker fails closed without database access.
+Set the Cloudflare Workers Builds **deploy command to `npm run deploy`**. The runner applies pending migrations on `main` before uploading. Keep the build command **`npm ci && npm run build && npm test`**. Disable non-production deploys. The release runner requires Workers Builds and branch `main`, applies pending migrations, then invokes Wrangler. Migration failure stops the upload. The checked-in Wrangler build guard refuses direct CI uploads that bypass this runner. Local development and dry-run packaging never invoke migrations. A direct CI dry run without the runner marker fails closed without database access.
 
 Add **`MIGRATION_DATABASE_URL` as a build-only secret**, using the database administrator's direct or session-pooler connection. Never add it to Wrangler vars, browser configuration or Worker runtime secrets. The runtime `DATABASE_URL` continues to use restricted `swoovr_signup` credentials with the transaction pooler. Migration connections on port 6543 are refused because the advisory lock requires session affinity. Do not disable TLS validation; provide the appropriate trusted CA in CI if needed.
 
@@ -45,7 +45,7 @@ Add **`MIGRATION_DATABASE_URL` as a build-only secret**, using the database admi
 
 The runner uses backward-compatible additive migrations. An upload failure after a migration leaves the applied schema in place; do not automatically roll back production data. Review destructive schema changes as separate releases.
 
-**Remote setup is pending:** no Cloudflare build setting or secret, GitHub branch, hosted database, route or deployment has been changed by this work. Before the eventual merge, set the deploy command to `npm run release` and add the build-only migration secret above. Local `./deploy.sh --dry-run` continues to build, test and package without migrations or upload.
+**Remote setup is pending:** no Cloudflare build setting or secret, GitHub branch, hosted database, route or deployment has been changed by this work. Before the eventual merge, set the deploy command to `npm run deploy` and add the build-only migration secret above. Local `./deploy.sh --dry-run` continues to build, test and package without migrations or upload.
 
 References checked: [Cloudflare build configuration](https://developers.cloudflare.com/workers/ci-cd/builds/configuration/), [PostgreSQL advisory locks](https://www.postgresql.org/docs/current/explicit-locking.html), [Astro collections](https://docs.astro.build/en/guides/content-collections/).
 
@@ -60,3 +60,26 @@ The home header and signup fill the first viewport, with a compact mobile menu a
 Signup and action buttons use label-sized widths without decorative arrows. The shared header returns as a fixed bar after its original position has scrolled away; its normal space is reserved to avoid shifting the page. On the homepage the fixed bar offers About/FAQs section links, with anchor clearance below the header. Every page has a compact mobile menu. Reduced-motion preference disables the header's entrance animation, and keyboard Skip to content remains above the fixed bar.
 
 Only `/referral/` uses the owner-specified gold `#d0b786`, silver `#c1c1c1`, gun grey `#454545` and premium blue `#1e3857`. The header/footer wordmark is tinted using a CSS mask over the existing canonical SVG; the page favicon derives from the master bird path in `branding/source/geometry.json`. Other pages retain their violet identity. No brand geometry was hand-edited.
+
+## Deployment troubleshooting and CLI configuration
+
+`npm run deploy` detects Workers Builds automatically: on Cloudflare main it runs migrations then uploads; locally it runs build, tests and dry-run packaging. `npm run release` remains a compatible explicit CI entry point. Migration failures now report a safe error category/code without printing database URLs, passwords or raw SQL errors.
+
+Workers Builds settings are separate from Wrangler runtime configuration. Wrangler 4.151.1 has no command to configure the Git connection, build/deploy commands or build-only secrets. Configure these once under Worker Settings → Builds:
+
+- Build command: `npm run build && npm test` (Workers Builds already installs dependencies).
+- Deploy command: `npm run deploy`.
+- Production branch: `main`; previews disabled.
+- Build variable: `NODE_VERSION=22.22.0`.
+- Build secret: `MIGRATION_DATABASE_URL`, administrator session connection on 5432.
+
+Runtime secrets can be configured interactively with:
+
+```sh
+npx wrangler secret put DATABASE_URL --name swoovr-com-web
+npx wrangler secret put WAITLIST_DEDUPE_KEY --name swoovr-com-web
+npx wrangler secret list --name swoovr-com-web
+npx wrangler deployments list --name swoovr-com-web
+```
+
+`secret put` publishes a Worker version immediately. Supply the restricted signup connection for `DATABASE_URL` and preserve the existing deduplication key. These commands do not create build secrets; never use them for `MIGRATION_DATABASE_URL`. The public encryption key, route and rate limiter are already defined in wrangler.jsonc.

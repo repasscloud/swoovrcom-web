@@ -13,7 +13,7 @@
     "preview": "astro preview",
     "test": "node --test tests/*.test.mjs",
     "dev:worker": "npm run build && wrangler dev --port 8787 --local-upstream localhost:8787",
-    "deploy": "./deploy.sh",
+    "deploy": "node scripts/deploy.mjs",
     "key:setup": "node scripts/setup-waitlist-key.mjs",
     "waitlist:decrypt": "node scripts/decrypt-waitlist.mjs",
     "db:migrate": "node scripts/migrate.mjs",

@@ -14,3 +14,14 @@ test('Wrangler guard cannot migrate and requires the explicit release runner in 
  await assert.rejects(beforeWorkerBuild({WORKERS_CI:'1',WORKERS_CI_BRANCH:'main'}));
  await assert.rejects(beforeWorkerBuild({WORKERS_CI:'1',WORKERS_CI_BRANCH:'feature'}));
 });
+
+test('migration failures identify the stage and safe error code without leaking credentials',async()=>{
+ const error=Object.assign(new Error('postgresql://private:password@host/postgres'),{code:'28P01'});
+ await assert.rejects(release({WORKERS_CI:'1',WORKERS_CI_BRANCH:'main'},async()=>{throw error},async()=>assert.fail('must not upload')),failure=>failure.message.includes('28P01') && failure.message.includes('authentication') && !failure.message.includes('password@'));
+});
+test('npm deploy selects Cloudflare release and preserves local packaging',async()=>{
+ const {deploy}=await import('../scripts/deploy.mjs');const events=[];
+ await deploy({WORKERS_CI:'1'},[],async()=>events.push('release'),()=>events.push('local'));
+ await deploy({},['--dry-run'],async()=>assert.fail('must not release'),args=>events.push(args));
+ assert.deepEqual(events,['release',['--dry-run']]);
+});
