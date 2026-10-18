@@ -1,0 +1,46 @@
+---
+import config from '../../site.config.json';
+const { referral = false } = Astro.props;
+---
+<form id="waitlist-form" class:list={['signup-form', { 'signup-form-referral': referral }]} action="/api/waitlist" method="post" data-signup-form data-referral={referral ? 'true' : undefined}>
+  <div class="signup-fields">
+    <div class="signup-field"><label for="signup-email">Email address</label><input id="signup-email" name="email" type="email" autocomplete="email" inputmode="email" maxlength="254" placeholder="you@example.com" required data-private="true" /></div>
+    {referral ? <div class="signup-field"><label for="signup-code">Referral code</label><input id="signup-code" name="referralCode" maxlength="64" pattern="[A-Za-z0-9_-]+" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Your code" required data-private="true" /></div> : <div class="signup-field"><label for="signup-city">City <span>(optional)</span></label><select id="signup-city" name="city" autocomplete="address-level2"><option value="">Your city</option>{config.cities.map(city => <option value={city}>{city}</option>)}</select></div>}
+  </div>
+  <label class="signup-consent"><input type="checkbox" name="adult" required /><span>I’m 18 or over.</span></label>
+  <label class="signup-consent"><input type="checkbox" name="consent" required /><span>I agree to receive Swoovr launch updates from RePass Cloud. <a href="/privacy/">Privacy notice</a>.</span></label>
+  <div class="form-trap" aria-hidden="true"><label for="signup-website">Leave this empty</label><input id="signup-website" name="website" tabindex="-1" autocomplete="off" /></div>
+  <button type="submit" class="signup-submit">{referral ? 'Register with your code' : 'Get early updates'} <span aria-hidden="true">↗</span></button>
+  <p class="form-status" role="status" aria-live="polite"></p>
+  <noscript><p>Enable JavaScript to register your interest.</p></noscript>
+</form>
+<script>
+  document.querySelectorAll<HTMLFormElement>('[data-signup-form]').forEach(form => {
+    const status = form.querySelector<HTMLElement>('[role="status"]')!;
+    const submit = form.querySelector<HTMLButtonElement>('button[type="submit"]')!;
+    const label = submit.textContent;
+    const referral = form.dataset.referral === 'true';
+    if (referral) {
+      const code = new URL(window.location.href).searchParams.get('code');
+      const input = form.querySelector<HTMLInputElement>('[name="referralCode"]');
+      if (input && code && /^[A-Za-z0-9_-]{1,64}$/.test(code)) input.value = code;
+    }
+    form.addEventListener('submit', async event => {
+      event.preventDefault();
+      if (!form.reportValidity() || submit.disabled) return;
+      const fields = new FormData(form);
+      submit.disabled = true; submit.textContent = 'Registering…'; status.textContent = ''; form.setAttribute('aria-busy','true');
+      try {
+        const response = await fetch('/api/waitlist', {
+          method:'POST',headers:{'Content-Type':'application/json'},signal:AbortSignal.timeout(20000),
+          body:JSON.stringify({email:fields.get('email'),city:fields.get('city') ?? '',referralCode:fields.get('referralCode') ?? '',adult:fields.get('adult') === 'on',consent:fields.get('consent') === 'on',website:fields.get('website')}),
+        });
+        const result = await response.json();
+        if (!response.ok || !result.ok) throw new Error(result.error || 'We could not confirm your signup. Please try again later.');
+        form.reset(); status.textContent = referral ? 'Thanks for following the trail. Your interest is registered with Swoovr.' : 'Thanks for joining us. Your interest is registered with Swoovr.';
+      } catch(error) {
+        status.textContent = error instanceof Error && !['TimeoutError','TypeError','SyntaxError'].includes(error.name) ? error.message : 'We could not confirm your signup. Please try again later.';
+      } finally {submit.disabled = false;submit.textContent = label;form.removeAttribute('aria-busy');}
+    });
+  });
+</script>

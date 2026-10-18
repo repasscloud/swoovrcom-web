@@ -15,7 +15,7 @@ The retained local private key can decrypt test enquiry payloads using the exist
 
 ## Content and publishing
 
-Public pages: home, about, how it works, safety, verification, venues, beta, contact, news and website privacy. Shared navigation and footer link these journeys. Production sitemaps are generated from actual output routes and served by the Worker; 404, API and draft routes are excluded.
+Public pages: home, about, how it works, safety, verification, venues, beta, contact, news, referral signup and website privacy. Shared navigation and footer link these journeys. Production sitemaps are generated from actual output routes and served by the Worker; 404, API and draft routes are excluded.
 
 Articles live in `src/content/news/*.md`. Frontmatter requires title, description, date, category and draft (defaults to true). Author defaults to Swoovr team. Five complete articles are deliberately drafts. To publish, review facts and product status, set `draft: false`, choose the actual publication date, build and test. The route, news listing and sitemap then include the article automatically. Returning to `draft: true` removes it on the next production build. No secret preview URLs are used. Development draft pages use `noindex, nofollow` and do not enter the production manifest.
 
@@ -48,3 +48,9 @@ The runner uses backward-compatible additive migrations. An upload failure after
 **Remote setup is pending:** no Cloudflare build setting or secret, GitHub branch, hosted database, route or deployment has been changed by this work. Before the eventual merge, set the deploy command to `npm run release` and add the build-only migration secret above. Local `./deploy.sh --dry-run` continues to build, test and package without migrations or upload.
 
 References checked: [Cloudflare build configuration](https://developers.cloudflare.com/workers/ci-cd/builds/configuration/), [PostgreSQL advisory locks](https://www.postgresql.org/docs/current/explicit-locking.html), [Astro collections](https://docs.astro.build/en/guides/content-collections/).
+
+## Compact hero and referral route
+
+The home header and signup fill the first viewport, with a compact mobile menu and a side-by-side layout for short landscape windows. Email and optional city share one row. Neither homepage nor referral signup shows a beta-interest checkbox; beta enquiries remain a separate page. Motion controls and the illustrative-photo caption sit directly on the collage. Content can expand naturally for enlarged text or form errors; nothing is clipped to force a fixed height.
+
+`/referral/` uses “found a code” language and requires email, referral code, adult declaration and permission for launch updates. A shareable `?code=...` can prefill an allowlisted code; it is never sent to analytics. This remains encrypted interest registration: codes are recorded, not redeemed or validated for app admission. Existing first-registration preservation still applies.

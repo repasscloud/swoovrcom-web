@@ -15,7 +15,7 @@ Typography: existing Avenir Next/Avenir with Segoe UI and sans-serif fallbacks; 
 
 The corporate site explains the product and its operator. Keep development language truthful: no launched-feature, safety, verification, founding-benefit or launch-date claims without evidence. Keep “Your kind of connection” as the brand line, with the concrete Adelaide/adult/development explanation immediately below it.
 
-Primary newsletter action: **Get early updates**. A dedicated beta-interest page lets adults explain what they want to test without subscribing to marketing. Contact uses a separate form for enquiries, venues, press, feedback, support and privacy requests. City is selected from the shared JSON allowlist. Referral-code disclosure uses “Friend’s code” and a short attribution prompt, without access or reward promises.
+Primary newsletter action: **Get early updates**. A dedicated beta-interest page lets adults explain what they want to test without subscribing to marketing. Contact uses a separate form for enquiries, venues, press, feedback, support and privacy requests. City is selected from the shared JSON allowlist. Referral codes use a dedicated `/referral/` page, reached through “Found a code?” on the homepage. It collects email, code, adult declaration and launch-update permission, without a beta checkbox or access/reward promises.
 
 Dedicated pages explain the product approach, safety, verification and venue concept using the product documents. Development context is stated where it clarifies actual availability; repeated “not ready” language is removed. No claim of live verification, moderation, venue inventory, launch dates or guaranteed safety is added. See [corporate site guide](corporate-site-guide.md).
 

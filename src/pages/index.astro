@@ -1,9 +1,11 @@
 ---
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
-import CitySelect from '../components/CitySelect.astro';
+import SignupForm from '../components/SignupForm.astro';
 import photos from '../data/photos.json';
 import '../styles/global.css';
+import '../styles/signup.css';
+import '../styles/home.css';
 const columns = Array.from({ length: 4 }, (_, column) => {
   return Array.from({ length: Math.max(4, Math.ceil(photos.length / 4)) }, (_, row) => photos[(row * 4 + column) % photos.length]).filter(Boolean);
 });
@@ -26,35 +28,19 @@ const columns = Array.from({ length: 4 }, (_, column) => {
   </head>
   <body>
     <div class="landing">
-      <Header />
-      <main id="main-content">
-        <section class="intro" aria-labelledby="headline">
-          <p class="opening">Life’s better with your kind of people.</p>
-          <h1 id="headline">Your kind<br />of connection.</h1>
-          <p class="description">Dating, friendship, a reason to meet. We’re building Swoovr around clearer intentions and more control over your connections. Starting in Adelaide, for adults 18+.</p>
-          <div class="hero-links"><a href="/how-it-works/">Meet the idea ↗</a><a href="/beta/">Help shape Swoovr ↗</a></div>
-          <form id="waitlist-form" class="waitlist-form" action="/api/waitlist" method="post">
-            <label for="waitlist-email">Join Swoovr early. Be part of what comes next.</label>
-            <div class="signup-row">
-              <input id="waitlist-email" name="email" type="email" autocomplete="email" inputmode="email" maxlength="254" placeholder="Your email address" required data-private="true" />
-              <button type="submit">Get early updates <span aria-hidden="true">↗</span></button>
-            </div>
-            <div class="signup-city"><CitySelect id="signup-city" /></div>
-            <details class="referral-field"><summary>I have a referral code</summary>
-              <label for="referral-code">Friend’s code</label>
-              <input class="extra-input" id="referral-code" name="referralCode" maxlength="64" pattern="[A-Za-z0-9_-]*" autocomplete="off" autocapitalize="off" spellcheck="false" aria-describedby="referral-help" />
-              <p id="referral-help">Who introduced you to Swoovr? Add their code here.</p>
-            </details>
-            <label class="consent-row"><input type="checkbox" name="betaInterest" /> <span>I’d also like to hear about beta testing opportunities.</span></label>
-            <label class="consent-row"><input type="checkbox" name="adult" required /> <span>I’m 18 or over.</span></label>
-            <div class="form-trap" aria-hidden="true"><label for="waitlist-website">Leave this empty</label><input id="waitlist-website" name="website" tabindex="-1" autocomplete="off" /></div>
-            <label class="consent-row"><input type="checkbox" name="consent" required /> <span>I agree to receive Swoovr launch updates from RePass Cloud. <a href="/privacy/">Privacy notice</a>.</span></label>
-            <p id="waitlist-status" class="form-status" role="status" aria-live="polite"></p>
-            <noscript><p>Enable JavaScript to join the waitlist.</p></noscript>
-          </form>
-          <p class="signoff">A little curiosity. A whole lot of possibility.</p>
+      <div class="home-first-screen">
+      <div class="home-header"><Header compact /></div>
+      <main id="main-content" class="home-hero">
+        <section class="hero-copy" aria-labelledby="headline">
+          <h1 id="headline" class="hero-title">Your kind<br />of connection.</h1>
+          <p class="hero-description">Dating, friendship, a reason to meet. Starting in Adelaide.</p>
+          <SignupForm />
+          <p class="hero-signoff">A little curiosity. A whole lot of possibility.</p>
+          <a class="hero-referral" href="/referral/">Found a code? <span aria-hidden="true">↗</span></a>
         </section>
-        <div class="photo-scene" role="img" aria-label="A moving collage of people, illustrating the connections to come">
+        <aside class="hero-collage" aria-label="Connection in pictures">
+        <div class="hero-art" role="img" aria-label="A moving collage of illustrative portraits">
+
           <div class="photo-wall" aria-hidden="true">
             {columns.map((column, index) => (
               <div class="photo-column" style={`--duration:${65 + index * 9}s; --offset:${index % 2 ? '-160px' : '0px'}`}>
@@ -66,7 +52,10 @@ const columns = Array.from({ length: 4 }, (_, column) => {
           </div>
           {photos.length === 0 && <div class="empty-wall">People to meet.<br />Stories to share.</div>}
         </div>
+          <div class="collage-tools"><span>Illustrative photos, not member profiles.</span><button type="button" id="motion-toggle" aria-pressed="false">Pause motion</button></div>
+        </aside>
       </main>
+      </div>
       <div class="corporate-content">
         <section id="about" class="story-section" aria-labelledby="about-title">
           <p class="section-note">The idea behind Swoovr</p>
@@ -79,38 +68,16 @@ const columns = Array.from({ length: 4 }, (_, column) => {
         </section>
         <section id="questions" class="faq-section" aria-labelledby="faq-title"><h2 id="faq-title">A few things to know.</h2>
           <details><summary>How can I get involved?</summary><p>Join early updates, <a href="/beta/">register for beta testing</a>, or share your ideas with the team. Swoovr is in development; each beta invitation will explain the features and locations included in that test.</p></details>
-          <details><summary>Do I need a referral code?</summary><p>No. Adults 18 and over can register directly. If a friend shared a code, you can add it to your signup to tell us who introduced you.</p></details>
+          <details><summary>Do I need a referral code?</summary><p>No. Adults 18 and over can register directly. If you’ve found a code, <a href="/referral/">follow the referral route</a> to register with it.</p></details>
           <details><summary>What about safety and verification?</summary><p>Read about <a href="/safety/">safety and boundaries</a> and <a href="/verification/">our verification approach</a>. Each page explains the principles behind the product and what the different checks are intended to mean.</p></details>
-          <details><summary>What information do you need?</summary><p>Your email, an adult declaration and permission for updates. City and beta interest are optional. We don’t need your date of birth, identity documents, exact address or dating preferences to register interest. <a href="/privacy/">Read how we handle your signup.</a></p></details>
+          <details><summary>What information do you need?</summary><p>Your email, an adult declaration and permission for updates. City is optional. We don’t need your date of birth, identity documents, exact address or dating preferences to register interest. <a href="/privacy/">Read how we handle your signup.</a></p></details>
           <details><summary>Can I join from outside Adelaide?</summary><p>Yes. Choose your city when you register so we can understand interest across Australia. Our first planned beta focuses on Adelaide.</p></details>
         </section>
         <section id="contact" class="contact-section" aria-labelledby="contact-title"><h2 id="contact-title">Let’s talk.</h2><div><p>Swoovr is a product of <a href="https://repasscloud.com/">RePass Cloud Pty Ltd</a>, South Australia.</p><p>For support, community partnerships, or press and media enquiries, <a href="/contact/">contact the Swoovr team</a>. Please mention what brings you here.</p><p>Have a place for people to meet? <a href="/venues/">Explore venue partnerships.</a></p><a class="return-link" href="#waitlist-form">Get early updates</a></div></section>
       </div>
-      <div class="photo-controls home-photo-controls"><span>Illustrative photos, not member profiles.</span><button type="button" id="motion-toggle" aria-pressed="false">Pause motion</button></div>
       <Footer />
     </div>
     <script>
-      const form = document.querySelector<HTMLFormElement>('#waitlist-form');
-      const status = document.querySelector<HTMLElement>('#waitlist-status');
-      const submit = form?.querySelector<HTMLButtonElement>('button[type="submit"]');
-      form?.addEventListener('submit', async event => {
-        event.preventDefault();
-        if (!form.reportValidity() || !submit || !status) return;
-        const fields = new FormData(form);
-        submit.disabled = true; submit.textContent = 'Joining…'; status.textContent = '';
-        form.setAttribute('aria-busy', 'true');
-        try {
-          const response = await fetch('/api/waitlist', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: AbortSignal.timeout(20000),
-            body: JSON.stringify({ email: fields.get('email'), consent: fields.get('consent') === 'on', adult: fields.get('adult') === 'on', city: fields.get('city'), betaInterest: fields.get('betaInterest') === 'on', referralCode: fields.get('referralCode'), website: fields.get('website') }),
-          });
-          const result = await response.json();
-          if (!response.ok || !result.ok) throw new Error(result.error || 'We could not confirm your signup. Please try again later.');
-          form.reset(); status.textContent = 'Thanks for joining us. Your interest is registered with Swoovr.';
-        } catch (error) {
-          status.textContent = error instanceof Error && error.name !== 'TimeoutError' && error.name !== 'TypeError' ? error.message : 'We could not confirm your signup. Please try again later.';
-        } finally { submit.disabled = false; submit.textContent = 'Get early updates ↗'; form.removeAttribute('aria-busy'); }
-      });
       const wall = document.querySelector<HTMLElement>('.photo-wall');
       const sources = [...new Set(Array.from(document.querySelectorAll<HTMLImageElement>('.photo-set img'), image => image.getAttribute('src')!))];
       for (let i = sources.length - 1; i > 0; i--) {

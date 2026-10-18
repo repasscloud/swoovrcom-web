@@ -1,10 +1,12 @@
 ---
 const path = Astro.url.pathname;
+const { compact = false } = Astro.props;
 const links = [['/how-it-works/', 'How it works'], ['/safety/', 'Safety'], ['/venues/', 'Venues'], ['/news/', 'News'], ['/contact/', 'Contact']];
 ---
 {import.meta.env.DEV && import.meta.env.SWOOVR_LOCAL_REVIEW === 'true' && <div class="local-review-banner">Local review · draft articles are visible · forms save only to this computer</div>}
 <a class="skip-link" href="#main-content">Skip to content</a>
 <header class="site-header">
  <a href="/" class="brand" aria-label="Swoovr home"><img src="/brand/logo.svg" alt="Swoovr" width="174" height="54" /></a>
- <nav aria-label="Main navigation">{links.map(([url,label])=><a href={url} aria-current={path === url ? 'page' : undefined}>{label}</a>)}<a class="nav-cta" href="/beta/" aria-current={path === '/beta/' ? 'page' : undefined}>Join the beta <span aria-hidden="true">↗</span></a></nav>
+ <nav class="desktop-nav" aria-label="Main navigation">{links.map(([url,label])=><a href={url} aria-current={path === url ? 'page' : undefined}>{label}</a>)}<a class="nav-cta" href="/beta/" aria-current={path === '/beta/' ? 'page' : undefined}>Join the beta <span aria-hidden="true">↗</span></a></nav>
+{compact && <details class="mobile-nav"><summary>Menu <span aria-hidden="true">☰</span></summary><nav aria-label="Mobile navigation">{links.map(([url,label])=><a href={url}>{label}</a>)}<a href="/beta/">Join the beta ↗</a></nav></details>}
 </header>

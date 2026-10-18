@@ -24,3 +24,18 @@ test('published route links resolve and all pages include shared footer and soci
  }
  assert.ok(config.cities.includes('Adelaide'));assert.ok(config.cities.includes('Other'));
 });
+
+test('homepage and dedicated referral signup keep their fields and consent separate',()=>{
+ const home=readFileSync('dist/index.html','utf8');
+ const referral=readFileSync('dist/referral/index.html','utf8');
+ const form=html=>html.match(/<form\b[^>]*>[\s\S]*?<\/form>/)?.[0] ?? '';
+ assert.ok(home.includes('href="/referral/"'));
+ assert.ok(!form(home).includes('name="referralCode"'));
+ assert.ok(!form(home).includes('name="betaInterest"'));
+ assert.ok(form(referral).match(/name="referralCode"[^>]*required/));
+ assert.ok(!form(referral).includes('name="betaInterest"'));
+ for(const html of [home,referral]){
+  assert.ok(form(html).match(/name="adult"[^>]*required/));
+  assert.ok(form(html).match(/name="consent"[^>]*required/));
+ }
+});

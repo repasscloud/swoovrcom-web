@@ -30,3 +30,11 @@ The earlier implementation snapshot follows for provenance.
 - Source scan finds no former application-host references in project text. Git history and ignored local caches/credentials are not rewritten.
 
 No GitHub push, production release, route migration, Supabase project creation or email sending was performed. Existing untracked marketing/source notes were retained and their corporate website references normalised; historical architecture descriptions are marked as snapshots where relevant.
+
+## Homepage and referral follow-up
+
+The compact homepage and its complete signup, launch consent, sign-off and photo controls were measured in real browser iframe viewports at 320×568, 375×667, 390×844, 430×932, 768×1024, 1024×768, 1280×720, 1440×900, 1280×600, 844×390, 667×375, 568×320 and 500×375. All 13 fit the initial viewport without horizontal overflow. Enlarged text and form messages may expand the page naturally; no content is clipped to enforce a fixed height. The mobile menu and relocated pause/play control were exercised in the browser.
+
+The dedicated `/referral/` form accepts a code, email, adult declaration and launch-update permission, with no beta checkbox. A shareable code prefill and browser submission were verified against the isolated local database; encrypted data retained the submitted code and did not opt into beta interest. The compact homepage signup also saved successfully. Neither test sent email or used the hosted database.
+
+The final build contains 11 sitemap pages plus the custom 404. All 26 tests and Wrangler dry-run packaging pass. The temporary viewport-review page was removed before the final build. The new viewport measurements and desktop/mobile screenshots are in ignored `artifacts/review/`. Nothing was pushed or deployed.
