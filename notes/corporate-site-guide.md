@@ -87,3 +87,7 @@ npx wrangler deployments list --name swoovr-com-web
 ### Supabase certificate trust for migrations
 
 If a build reports SELF_SIGNED_CERT_IN_CHAIN, download the server root CA certificate from Supabase → Database → Settings → SSL Configuration → Download certificate. In Cloudflare → Worker Settings → Builds → Variables and secrets, add `MIGRATION_DATABASE_CA` containing the complete PEM certificate, including BEGIN/END CERTIFICATE lines. It can be a build variable (the certificate is public) or a build secret. The migration client uses it as a trusted CA while retaining certificate and hostname verification. Do not set NODE_TLS_REJECT_UNAUTHORIZED=0 or disable verification. URL SSL parameters cannot override this migration TLS configuration. No runtime secret is needed for this migration-only setting.
+
+### Bundled Supabase CA (19 October update)
+
+The public Supabase Root 2021 CA is now bundled in `src/database-ca.mjs` for migrations and runtime database clients. No `MIGRATION_DATABASE_CA` setting is required for this Supabase deployment. An optional build CA value can still extend migration trust for other database providers. The bundled certificate was verified against the actual production pooler's presented chain without database credentials. TLS verification remains enabled. The root expires 26 April 2031 and must be replaced when Supabase rotates its CA. This supersedes the manual certificate setup above.

@@ -1,7 +1,8 @@
+import {supabaseDatabaseCA} from './database-ca.mjs';
 import pg from 'pg';
 function databaseTLS(env) {
  const url = new URL(env.DATABASE_URL);
- return env.LOCAL_DEVELOPMENT === 'true' && ['127.0.0.1','localhost'].includes(url.hostname) ? false : {rejectUnauthorized:true};
+ return env.LOCAL_DEVELOPMENT === 'true' && ['127.0.0.1','localhost'].includes(url.hostname) ? false : {rejectUnauthorized:true,ca:supabaseDatabaseCA};
 }
 export async function storeSignup(record, env) {
   // Request-scoped client: never share live sockets across Worker requests.

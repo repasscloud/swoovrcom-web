@@ -1,3 +1,4 @@
+import {supabaseDatabaseCA} from '../src/database-ca.mjs';
 import pg from 'pg';
 import { readdir, readFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
@@ -82,8 +83,8 @@ export function migrationConnectionOptions(env = process.env) {
  // pg connection-string SSL parameters override the explicit ssl object.
  // Keep verification and the configured CA authoritative for migrations.
  for (const key of ['sslmode','sslcert','sslkey','sslrootcert','ssl','uselibpqcompat']) url.searchParams.delete(key);
- const ssl = {rejectUnauthorized:true};
- if (env.MIGRATION_DATABASE_CA) ssl.ca = env.MIGRATION_DATABASE_CA;
+ const ssl = {rejectUnauthorized:true,ca:supabaseDatabaseCA};
+ if (env.MIGRATION_DATABASE_CA) ssl.ca = [supabaseDatabaseCA,env.MIGRATION_DATABASE_CA];
  return {connectionString:url.toString(),ssl:local ? false : ssl,connectionTimeoutMillis:10000};
 }
 
