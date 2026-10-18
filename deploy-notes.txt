@@ -1,0 +1,48 @@
+I’ll check the current scripts and separate the everyday commands from database and deployment commands.
+
+
+
+
+Ran command
+
+
+
+
+
+
+
+Run these from /Users/danijeljw/Developer/swoovrcom-web.
+The command you’ll use most is:
+npm run dev:review
+It starts the complete local setup:
+- Development preview — live changes and draft articles.
+- Production-style preview — built pages without drafts.
+- Forms save to an isolated local database.
+Press Ctrl+C to stop everything.
+Command	What it does
+npm ci	Installs the exact dependencies. Use after cloning or dependency changes.
+npm run dev:review	Starts the complete local review setup described above.
+npm run dev	Starts the website editor preview only. Forms require a separate Worker.
+npm run build	Processes photos and builds the production site and sitemap.
+npm run preview	Serves the existing production build as static pages. Forms aren’t included.
+npm test	Runs the automated tests. Run the build first.
+npm run photos	Reprocesses the photo collection. Already included in development/build commands.
+npm run deploy	Builds, tests and checks deployment packaging. Does not deploy.
+npm run deploy -- --build-only	Builds and tests without packaging.
+
+
+These are occasional or specialist commands:
+Command	What it does
+npm run dev:worker	Starts the Worker on port 8787 using your local configuration. Unlike dev:review, it doesn’t create an isolated database.
+npm run test:db	Runs database integration checks against a separately prepared disposable database.
+npm run db:migrate	Applies pending migrations to the database specified by MIGRATION_DATABASE_URL.
+npm run key:setup	Sets up the encryption keypair; checks against the existing configured key.
+npm run waitlist:decrypt -- /path/to/private.pem < record.txt	Decrypts one saved signup or enquiry record.
+npm run release	Production migration and deployment command, restricted to Cloudflare Builds on main.
+
+
+For a routine check before pushing:
+npm run build
+npm test
+npm run deploy
+None of those three commands pushes to GitHub or deploys production.
