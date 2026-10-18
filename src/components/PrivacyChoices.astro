@@ -1,6 +1,6 @@
 ---
 import config from '../../site.config.json';
-const gaIds = Object.fromEntries(Object.entries(config.googleAnalyticsMeasurementIds).filter(([host, id]) => ['swoovr.app', 'swoovr.com'].includes(host) && /^G-[A-Z0-9]+$/.test(id)));
+const gaIds = Object.fromEntries(Object.entries(config.googleAnalyticsMeasurementIds).filter(([host, id]) => ['swoovr.com'].includes(host) && /^G-[A-Z0-9]+$/.test(id)));
 const hasAnalytics = Object.keys(gaIds).length > 0;
 ---
 <button type="button" class="privacy-pill" data-privacy-open><img src="/privacyoptions29x14.png" width="29" height="14" alt="" />Your privacy choices</button>

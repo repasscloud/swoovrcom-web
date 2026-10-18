@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import worker from '../src/worker.mjs';
-for (const origin of ['https://swoovr.app', 'https://swoovr.com']) {
+for (const origin of ['https://swoovr.com']) {
   test(`${origin} publishes its own sitemap and robots directive`, async () => {
     const response = await worker.fetch(new Request(origin + '/sitemap.xml'), {});
     assert.equal(response.status, 200);
@@ -9,7 +9,7 @@ for (const origin of ['https://swoovr.app', 'https://swoovr.com']) {
     const xml = await response.text();
     assert.ok(xml.includes(`<loc>${origin}/</loc>`));
     assert.ok(xml.includes(`<loc>${origin}/privacy/</loc>`));
-    assert.ok(!xml.includes(origin.endsWith('.app') ? 'https://swoovr.com' : 'https://swoovr.app'));
+    assert.equal((xml.match(/<url>/g) || []).length, 2);
     const index = await worker.fetch(new Request(origin + '/sitemap-index.xml'), {});
     assert.ok((await index.text()).includes(`<loc>${origin}/sitemap.xml</loc>`));
     const robots = await worker.fetch(new Request(origin + '/robots.txt'), {});
@@ -25,4 +25,10 @@ test('indexing endpoints support HEAD and reject unsupported methods and hosts',
   assert.equal(post.status, 405); assert.equal(post.headers.get('allow'), 'GET, HEAD');
   const unknown = await worker.fetch(new Request('https://attacker.example/sitemap.xml'), {});
   assert.equal(unknown.status, 404);
+});
+
+test('unconfigured hostnames cannot serve the corporate page or signup endpoint', async () => {
+  for (const path of ['/', '/api/waitlist', '/brand/logo.svg']) {
+    assert.equal((await worker.fetch(new Request('https://application.invalid' + path), {})).status, 404);
+  }
 });

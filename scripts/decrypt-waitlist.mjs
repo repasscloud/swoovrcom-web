@@ -1,11 +1,19 @@
-import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
+import { privateDecrypt, constants, createDecipheriv } from 'node:crypto';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
-const key = process.argv[2] || join(homedir(), '.config', 'swoovr', 'waitlist', 'private.pem');
+const key = readFileSync(process.argv[2] || join(homedir(), '.config', 'swoovr', 'waitlist', 'private.pem'));
 const input = readFileSync(0, 'utf8').trim();
-const encoded = input.replace(/^SWOOVR1:/, '').replace(/\s/g, '');
-if (!/^[A-Za-z0-9+/]+={0,2}$/.test(encoded) || Buffer.from(encoded, 'base64').length !== 512) throw new Error('Paste only the SWOOVR1: notification body on stdin.');
-const result = spawnSync('openssl', ['pkeyutl', '-decrypt', '-inkey', key, '-pkeyopt', 'rsa_padding_mode:oaep', '-pkeyopt', 'rsa_oaep_md:sha256', '-pkeyopt', 'rsa_mgf1_md:sha256'], { input: Buffer.from(encoded, 'base64') });
-if (result.status !== 0) { console.error('Decryption failed. Check the private key and complete notification body.'); process.exit(1); }
-console.log(JSON.stringify(JSON.parse(result.stdout.toString()), null, 2));
+const unwrap = data => privateDecrypt({ key, padding: constants.RSA_PKCS1_OAEP_PADDING, oaepHash: 'sha256' }, Buffer.from(data, 'base64'));
+let plaintext;
+if (input.startsWith('SWOOVR2:')) {
+  const envelope = JSON.parse(Buffer.from(input.slice(8), 'base64').toString());
+  const data = Buffer.from(envelope.data, 'base64');
+  const decipher = createDecipheriv('aes-256-gcm', unwrap(envelope.key), Buffer.from(envelope.iv, 'base64'));
+  decipher.setAAD(Buffer.from('SWOOVR2:' + envelope.id));
+  decipher.setAuthTag(data.subarray(-16));
+  plaintext = Buffer.concat([decipher.update(data.subarray(0, -16)), decipher.final()]);
+} else if (input.startsWith('SWOOVR1:')) {
+  plaintext = unwrap(input.slice(8));
+} else { throw new Error('Supply one SWOOVR1 or SWOOVR2 record on stdin.'); }
+console.log(JSON.stringify(JSON.parse(plaintext.toString()), null, 2));

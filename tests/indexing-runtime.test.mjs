@@ -1,11 +1,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Miniflare, convertV4MiniflareOptions } from 'miniflare';
+import { build } from 'esbuild';
 import { readFileSync } from 'node:fs';
 
 test('Cloudflare runtime rewrites HTML per hostname without redirects or touching binary assets', async () => {
+  const bundled = await build({ entryPoints: ['src/worker.mjs'], bundle: true, write: false, format: 'esm', platform: 'node', external: ['node:*', 'cloudflare:*', 'pg-native'], banner: { js: "import { createRequire } from 'node:module'; const require = createRequire('file:///worker.js');" } });
   const mf = new Miniflare(convertV4MiniflareOptions({
-    modules: true, scriptPath: 'src/worker.mjs', compatibilityDate: '2026-10-17',
+    modules: true, script: bundled.outputFiles[0].text, compatibilityFlags: ['nodejs_compat'], compatibilityDate: '2026-10-17',
     serviceBindings: {
       ASSETS: async request => {
         const path = new URL(request.url).pathname;
@@ -16,7 +18,7 @@ test('Cloudflare runtime rewrites HTML per hostname without redirects or touchin
     },
   }));
   try {
-    for (const origin of ['https://swoovr.app', 'https://swoovr.com']) {
+    for (const origin of ['https://swoovr.com']) {
       for (const path of ['/', '/privacy/']) {
         const response = await mf.dispatchFetch(origin + path);
         assert.equal(response.status, 200); assert.equal(response.headers.has('location'), false);
@@ -32,10 +34,10 @@ test('Cloudflare runtime rewrites HTML per hostname without redirects or touchin
   } finally { await mf.dispose(); }
 });
 
-test('built public pages have origin-relative metadata rather than a preferred domain', () => {
+test('built public pages have corporate canonical metadata', () => {
   for (const [name, path] of [['index', '/'], ['privacy', '/privacy/']]) {
     const source = readFileSync(`src/pages/${name}.astro`, 'utf8');
-    assert.ok(source.includes(`rel="canonical" href="${path}"`));
-    assert.ok(!source.includes('rel="canonical" href="https://swoovr.app'));
+    assert.ok(source.includes(`rel="canonical" href="https://swoovr.com${path}"`));
+
   }
 });

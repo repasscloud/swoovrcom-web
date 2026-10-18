@@ -1,4 +1,8 @@
-# Copy to .dev.vars (ignored), then set a MailerSend email/send token.
-MAILERSEND_API_KEY=
-# Only for local Wrangler development. Never upload this variable to production.
+# Local development only. Never commit .dev.vars.
 LOCAL_DEVELOPMENT=true
+# Copy Supabase transaction pooler URI, using the restricted role username:
+# swoovr_signup.PROJECT_REF (not postgres.PROJECT_REF). URL-encode the password.
+# Do not add sslmode parameters; the driver enforces certificate validation.
+DATABASE_URL=postgresql://swoovr_signup.PROJECT_REF:ENCODED_PASSWORD@POOLER_HOST:6543/postgres
+# Generate once: openssl rand -hex 32. Keep stable; back up securely.
+WAITLIST_DEDUPE_KEY=replace-with-a-random-secret-at-least-32-characters

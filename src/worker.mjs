@@ -1,5 +1,6 @@
-const ORIGINS = new Set(['https://swoovr.app', 'https://swoovr.com']);
-const CONSENT = 'waitlist-2026-10-17';
+const ORIGINS = new Set(['https://swoovr.com']);
+import { encryptSignup, emailFingerprint } from './signup-crypto.mjs';
+const CONSENT = 'waitlist-2026-10-18';
 const MAX_BYTES = 4096;
 function json(status, error) {
   return Response.json(error ? { ok: false, error } : { ok: true }, {
@@ -28,13 +29,13 @@ function validEmail(value) {
   if (parts.length !== 2 || parts[0].length > 64 || !parts[0] || parts[0].startsWith('.') || parts[0].endsWith('.') || parts[0].includes('..')) return false;
   return /^[A-Za-z0-9.!#$%&'*+\/=?^_`{|}~-]+$/.test(parts[0]) && parts[1].length <= 253 && parts[1].includes('.') && parts[1].split('.').every(label => /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/i.test(label));
 }
-export async function handleWaitlist(request, env, send = fetch) {
+export async function handleWaitlist(request, env, store) {
   if (request.method !== 'POST') return json(405, 'Use POST.');
   const origin = request.headers.get('origin');
   const local = env.LOCAL_DEVELOPMENT === 'true' && ['http://localhost:8787', 'http://127.0.0.1:8787'].includes(origin);
   if ((!ORIGINS.has(origin) && !local) || origin !== new URL(request.url).origin) return json(403, 'Please submit the form from this website.');
   if (request.headers.get('content-type')?.split(';')[0].trim() !== 'application/json') return json(415, 'Use JSON.');
-  if (!env.MAILERSEND_API_KEY || !env.WAITLIST_PUBLIC_KEY || !env.WAITLIST_RATE_LIMIT) return json(503, 'The waitlist is temporarily unavailable. Please try again later.');
+  if (!env.DATABASE_URL || !env.WAITLIST_DEDUPE_KEY || !env.WAITLIST_PUBLIC_KEY || !env.WAITLIST_RATE_LIMIT) return json(503, 'The waitlist is temporarily unavailable. Please try again later.');
   try {
     const ip = request.headers.get('cf-connecting-ip') || 'local';
     if (!(await env.WAITLIST_RATE_LIMIT.limit({ key: `waitlist:${ip}` })).success) return json(429, 'Please wait a minute before trying again.');
@@ -46,36 +47,31 @@ export async function handleWaitlist(request, env, send = fetch) {
   if (typeof data.website === 'string' && data.website) return json(202);
   const email = typeof data.email === 'string' ? data.email.trim() : '';
   if (!validEmail(email) || data.consent !== true) return json(400, 'Enter a valid email address and agree to receive Swoovr launch updates.');
-  let encrypted;
+  const referralCode = data.referralCode ?? '';
+  const city = data.city ?? '';
+  if (typeof referralCode !== 'string' || referralCode.length > 64 || !/^[a-zA-Z0-9_-]*$/.test(referralCode) || typeof city !== 'string' || city.length > 100 || /[\x00-\x1f\x7f]/.test(city) || data.adult !== true || (data.betaInterest !== undefined && typeof data.betaInterest !== 'boolean')) {
+    return json(400, 'Confirm you are 18 or over and check your city and referral code.');
+  }
+  let record;
   try {
-    const der = Uint8Array.from(atob(env.WAITLIST_PUBLIC_KEY.replace(/-----[^-]+-----|\s/g, '')), char => char.charCodeAt(0));
-    const key = await crypto.subtle.importKey('spki', der, { name: 'RSA-OAEP', hash: 'SHA-256' }, false, ['encrypt']);
-    const plaintext = JSON.stringify({ email, consent: CONSENT, at: new Date().toISOString() });
-    const bytes = new Uint8Array(await crypto.subtle.encrypt({ name: 'RSA-OAEP' }, key, new TextEncoder().encode(plaintext)));
-    encrypted = 'SWOOVR1:' + btoa(String.fromCharCode(...bytes));
+    const id = crypto.randomUUID();
+    const at = new Date().toISOString();
+    const ownReferralCode = crypto.randomUUID().replaceAll('-', '');
+    record = { id, emailHash: await emailFingerprint(email, env.WAITLIST_DEDUPE_KEY), referralCode: ownReferralCode,
+      encrypted: await encryptSignup({ id, email, city: city.trim(), adult: true, betaInterest: data.betaInterest === true,
+        submittedReferralCode: referralCode || null, consent: CONSENT, privacy: 'privacy-2026-10-18', at }, env.WAITLIST_PUBLIC_KEY) };
   } catch { return json(503, 'The waitlist is temporarily unavailable.'); }
   try {
-    const response = await send('https://api.mailersend.com/v1/email', {
-      method: 'POST', redirect: 'manual', signal: AbortSignal.timeout(15000),
-      headers: { Authorization: `Bearer ${env.MAILERSEND_API_KEY}`, 'Content-Type': 'application/json', Accept: 'application/json' },
-      body: JSON.stringify({ from: { email: 'hello@repasscloud.com', name: 'Swoovr' },
-        to: [{ email: 'swoovr.app@repasscloud.com' }], subject: 'swoovr app waitlist signup', text: encrypted,
-        settings: { track_clicks: false, track_opens: false, track_content: false } }),
-    });
-    if (response.status !== 202 || !response.headers.get('x-message-id') || response.headers.get('x-send-paused') === 'true') throw new Error('not_accepted');
-    const text = await readLimited(response, 32768);
-    if (text.trim()) {
-      const body = JSON.parse(text);
-      if (!body || body.warnings && (!Array.isArray(body.warnings) || body.warnings.length)) throw new Error('provider_warning');
-    }
+    const persist = store ?? (await import('./signup-store.mjs')).storeSignup;
+    await persist(record, env);
     return json(202);
   } catch {
-    // Never log submitted addresses, ciphertext, tokens, or provider response bodies.
-    console.warn(JSON.stringify({ event: 'waitlist_notification', outcome: 'not_confirmed' }));
+    // Never log addresses, ciphertext, credentials or database exception details.
+    console.warn(JSON.stringify({ event: 'waitlist_storage', outcome: 'not_confirmed' }));
     return json(502, 'We could not confirm your signup. Please try again later.');
   }
 }
-// Each public host owns its search metadata. No cross-domain canonical or redirect.
+// Only the corporate hostname is served in production.
 function indexingResponse(request, origin, path) {
   if (!origin) return new Response('Not found', { status: 404 });
   if (!['GET', 'HEAD'].includes(request.method)) return new Response('Method not allowed', { status: 405, headers: { Allow: 'GET, HEAD' } });
@@ -96,6 +92,8 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const path = url.pathname;
+    const local = env.LOCAL_DEVELOPMENT === 'true' && ['localhost', '127.0.0.1'].includes(url.hostname);
+    if (!ORIGINS.has(url.origin) && !local) return new Response('Not found', { status: 404 });
     const origin = ORIGINS.has(url.origin) ? url.origin : null;
     if (['/sitemap.xml', '/sitemap-index.xml', '/robots.txt'].includes(path)) return indexingResponse(request, origin, path);
     if (path === '/api/waitlist') return handleWaitlist(request, env);

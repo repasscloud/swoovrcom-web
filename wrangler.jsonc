@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "swoovr-web",
+  "name": "swoovr-com-web",
   "account_id": "8d7f0c4cf8b2408a145786b0996af45b",
   "main": "src/worker.mjs",
   "compatibility_date": "2026-10-17",
@@ -21,7 +21,7 @@
   "ratelimits": [
     {
       "name": "WAITLIST_RATE_LIMIT",
-      "namespace_id": "1001",
+      "namespace_id": "1002",
       "simple": {
         "limit": 3,
         "period": 60
@@ -33,12 +33,11 @@
   },
   "routes": [
     {
-      "pattern": "swoovr.app/*",
-      "zone_name": "swoovr.app"
-    },
-    {
       "pattern": "swoovr.com/*",
       "zone_name": "swoovr.com"
     }
+  ],
+  "compatibility_flags": [
+    "nodejs_compat"
   ]
 }
