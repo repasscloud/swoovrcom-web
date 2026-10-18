@@ -12,6 +12,8 @@ npm test
 ./deploy.sh --dry-run        # build, tests and packaging only; never uploads
 ```
 
+Use `.env.example` as the setup checklist and keep real values in the ignored `.env` file. Local files do not upload secrets to Cloudflare; set `DATABASE_URL` and `WAITLIST_DEDUPE_KEY` as Worker runtime secrets separately. For local Worker testing, use `.dev.vars.example`: an existing `.dev.vars` takes precedence over `.env`. The public key and rate-limit binding remain in `wrangler.jsonc`.
+
 Keep `.dev.vars` ignored. Use `.dev.vars.example` for the new database configuration; copied MailerSend credentials are no longer used and can be removed. For static preview the form cannot save data. Worker development requires `LOCAL_DEVELOPMENT=true`. Missing database secrets fail closed.
 
 ## Supabase and GitHub setup
