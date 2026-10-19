@@ -1,8 +1,8 @@
 ---
 title: "Why we’re building Swoovr"
 description: "A clearer starting point for meeting people, without assuming everyone wants the same thing."
-date: 2026-10-18
-draft: true
+date: 2026-10-16
+draft: false
 category: "Our purpose"
 author: Swoovr team
 ---
