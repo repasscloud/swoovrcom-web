@@ -12,7 +12,11 @@ for (const origin of ['https://swoovr.com']) {
     assert.ok(xml.includes(`<loc>${origin}/privacy/</loc>`));
     assert.equal((xml.match(/<url>/g) || []).length, routes.length);
     for(const route of routes) assert.ok(xml.includes(`<loc>${origin}${route}</loc>`));
-    assert.ok(!xml.includes('why-we-are-building-swoovr'));
+    assert.deepEqual(
+      [...xml.matchAll(/<loc>(.*?)<\/loc>/g)].map((match) => match[1]),
+      routes.map((route) => `${origin}${route}`),
+      'sitemap must contain exactly the published routes',
+    );
     const index = await worker.fetch(new Request(origin + '/sitemap-index.xml'), {});
     assert.ok((await index.text()).includes(`<loc>${origin}/sitemap.xml</loc>`));
     const robots = await worker.fetch(new Request(origin + '/robots.txt'), {});

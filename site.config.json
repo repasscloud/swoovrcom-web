@@ -21,7 +21,7 @@
     {
       "name": "X",
       "icon": "x",
-      "url": "https://x.com/swoovrapp"
+      "url": "https://x.com/swoovrapp/"
     },
     {
       "name": "Instagram",
@@ -37,13 +37,13 @@
     {
       "name": "TikTok",
       "icon": "tiktok",
-      "url": "#",
+      "url": "https://www.tiktok.com/@swoovrapp/",
       "placeholder": true
     },
     {
       "name": "Facebook",
       "icon": "facebook",
-      "url": "#",
+      "url": "https://www.facebook.com/swoovrapp/",
       "placeholder": true
     }
   ]
