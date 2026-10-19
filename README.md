@@ -31,7 +31,7 @@ The Worker connects to PostgreSQL through Supabase's transaction pooler using a 
 
 Production releases come from Cloudflare **Workers Builds**, linked to `repasscloud/swoovrcom-web`, production branch `main`. Build: `npm ci && npm run build && npm test`. Deploy: `npm run deploy` (migrations, then Worker upload). Set `MIGRATION_DATABASE_URL` as a build-only administrator direct/session-connection secret, separately from restricted runtime credentials. See [publishing and release guide](notes/corporate-site-guide.md). The local deploy helper does not upload or read local secrets. Keep preview deployments disabled because this Worker owns production routes.
 
-Only `swoovr.com/*` is configured. This is a distinct Worker name: never attach this repository's build to the old shared Worker. The owner must move the corporate hostname route from that Worker to the new one without changing the original application's route or deleting its Worker. Workers Builds must be used, rather than a static-only Pages build, because `/api/waitlist` runs server code.
+`swoovr.com` is attached to this Worker as a Workers Custom Domain (`custom_domain: true` in `wrangler.jsonc`), which manages the DNS record and certificate. This is a distinct Worker name: never attach this repository's build to the old `swoovr-web` Worker. `swoovr.app` is served by a separate repository and Worker. Workers Builds must be used, rather than a static-only Pages build, because `/api/waitlist` runs server code.
 
 ## Signup guarantees and limits
 

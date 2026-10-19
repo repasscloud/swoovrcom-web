@@ -33,8 +33,8 @@
   },
   "routes": [
     {
-      "pattern": "swoovr.com/*",
-      "zone_name": "swoovr.com"
+      "pattern": "swoovr.com",
+      "custom_domain": true
     }
   ],
   "compatibility_flags": [
