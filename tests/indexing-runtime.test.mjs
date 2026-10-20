@@ -40,5 +40,7 @@ test('built public pages have corporate canonical metadata', () => {
     const html = readFileSync(`dist${route}index.html`,'utf8');
     assert.ok(html.includes(`rel="canonical" href="https://swoovr.com${route}"`),route);
     assert.ok(!html.includes('Draft preview'),route);
+    assert.ok(html.includes('property="og:image" content="https://swoovr.com/brand/og-image.png"'),route);
+    assert.ok(html.includes('name="twitter:card" content="summary_large_image"'),route);
   }
 });
