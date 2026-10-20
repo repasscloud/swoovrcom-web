@@ -31,20 +31,18 @@
     {
       "name": "LinkedIn",
       "icon": "linkedin",
-      "url": "#",
-      "placeholder": true
+      "url": "https://www.linkedin.com/company/repass-cloud",
+      "placeholder": false
     },
     {
       "name": "TikTok",
       "icon": "tiktok",
-      "url": "https://www.tiktok.com/@swoovrapp/",
-      "placeholder": true
+      "url": "https://www.tiktok.com/@swoovrapp/"
     },
     {
       "name": "Facebook",
       "icon": "facebook",
-      "url": "https://www.facebook.com/swoovrapp/",
-      "placeholder": true
+      "url": "https://www.facebook.com/swoovrapp/"
     }
   ]
 }
