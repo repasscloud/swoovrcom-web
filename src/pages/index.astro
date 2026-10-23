@@ -2,6 +2,8 @@
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import SignupForm from '../components/SignupForm.astro';
+import Splash from '../components/Splash.astro';
+import Motion from '../components/Motion.astro';
 import photos from '../data/photos.json';
 import '../styles/global.css';
 import '../styles/signup.css';
@@ -15,13 +17,16 @@ const columns = Array.from({ length: 4 }, (_, column) => {
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
-    <meta name="theme-color" content="#eee8fa" />
+    <script is:inline>document.documentElement.classList.add('js')</script>
+    <meta name="theme-color" content="#ffffff" />
     <title>Swoovr — Your kind of connection.</title>
     <meta name="description" content="Clearer intentions. More deliberate connections. Meet Swoovr, a dating and social discovery app being built in Adelaide for adults 18+." />
     <meta property="og:url" content="https://swoovr.com/" />
     <link rel="sitemap" type="application/xml" href="/sitemap-index.xml" />
     <link rel="canonical" href="https://swoovr.com/" />
     <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta property="og:title" content="Swoovr — Your kind of connection" />
     <meta property="og:description" content="Clearer intentions. More deliberate connections. Starting in Adelaide." />
     <meta property="og:type" content="website" />
@@ -36,6 +41,7 @@ const columns = Array.from({ length: 4 }, (_, column) => {
     <meta name="twitter:image:alt" content="Swoovr logo" />
   </head>
   <body>
+    <Splash />
     <div class="landing">
       <div class="home-first-screen">
       <div class="home-header"><Header compact /></div>
@@ -118,5 +124,6 @@ const columns = Array.from({ length: 4 }, (_, column) => {
       preference.addEventListener('change', event => { paused = event.matches; updateMotion(); });
       updateMotion();
     </script>
+    <Motion />
   </body>
 </html>

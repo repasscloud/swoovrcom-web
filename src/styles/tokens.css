@@ -1,0 +1,49 @@
+/* Swoovr website tokens: black and white (the "Standard" scheme).
+   Source of truth: swoovr-marketing/design/ (brand-colours.json, themes.json). Copied 24 Oct 2026.
+   Imported first by global.css. The referral page maps every token back to its navy palette in referral.css. */
+:root {
+  /* Core neutrals */
+  --ink: #0A0A0A;        /* text, primary buttons, focus rings, logo */
+  --ink-hover: #262626;  /* primary button hover */
+  --muted: #6B6B6B;      /* secondary text (5.3:1 on white, 5.1:1 on canvas) */
+  --line: #E5E5E5;       /* dividers, card borders (decorative only) */
+  --control: #8A8A8A;    /* input/checkbox/pill borders: needs 3:1 against white, LINE doesn't pass */
+  --soft: #F4F4F4;       /* chips, photo placeholders, hover fills */
+  --canvas: #FAFAFA;     /* page background behind white cards, alternating sections */
+  --white: #FFFFFF;      /* hero and card background */
+  --on-ink: #FAFAFA;     /* text on ink buttons/panels */
+  --on-ink-muted: #A3A3A3; /* secondary text on ink panels */
+  --shadow: #0A0A0A14;   /* soft shadows (ink at 8%) */
+
+  /* Status: always pair with an icon or words */
+  --success: #1E7A46;
+  --warning: #8A5300;
+  --error: #C0262D;
+  --info: #0864C8;
+
+  /* Verification badges: fixed colours, never recolour */
+  --badge-photo-verified: #087CFA;
+  --badge-id-verified: #00AAA0;
+  --badge-founding: #D4AF37;
+  --badge-staff: #E0115F;
+  --badge-bot: #C0C0C0;
+
+  /* Type */
+  --font: "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+  /* Motion (same curves as the app prototype and videos) */
+  --ease-out: cubic-bezier(.2, .8, .2, 1);
+  --ease-in-out: cubic-bezier(.76, 0, .24, 1);
+
+  /* Splash colours (see splash/Splash.astro) */
+  --splash-bg: #0A0A0A;
+  --splash-fg: #FAFAFA;
+}
+
+/* Scroll reveal: add data-reveal to a section; a tiny IntersectionObserver adds .is-visible.
+   Content must be visible without JS: only hide when <html> has .js. */
+.js [data-reveal] { opacity: 0; transform: translateY(18px); transition: opacity .6s var(--ease-out), transform .6s var(--ease-out); }
+.js [data-reveal].is-visible { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  .js [data-reveal] { opacity: 1; transform: none; transition: none; }
+}

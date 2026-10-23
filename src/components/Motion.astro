@@ -1,0 +1,31 @@
+---
+// Subtle page motion. Render at the end of <body>; the page head adds class="js" to <html> first.
+// Scroll reveal: sections and cards rise 18px as they enter view (CSS in tokens.css), staggered 70ms.
+// Hero rise: adds .hero-in once the splash has wiped away, or straight away when there is no splash.
+// The referral page keeps its static look. Reduced motion is handled in CSS.
+---
+<script is:inline>
+  (function(){
+    var root = document.documentElement;
+    if (document.body.classList.contains('theme-referral')) { root.classList.add('hero-in'); return; }
+    var heroIn = function(){ requestAnimationFrame(function(){ requestAnimationFrame(function(){ root.classList.add('hero-in'); }); }); };
+    if (root.classList.contains('has-splash')) {
+      new MutationObserver(function(_, observer){
+        if (!root.classList.contains('has-splash')) { observer.disconnect(); heroIn(); }
+      }).observe(root, { attributes: true, attributeFilter: ['class'] });
+    } else heroIn();
+
+    var targets = document.querySelectorAll('.page-main>section:not(.page-hero):not(.steps):not(.verification-guide):not(.news-list),.steps>article,.verification-guide>*,.news-list>article,.page-main>.article-body,.corporate-content>section');
+    if (!('IntersectionObserver' in window)) return;
+    var observer = new IntersectionObserver(function(entries){
+      var shown = 0;
+      entries.forEach(function(entry){
+        if (!entry.isIntersecting) return;
+        entry.target.style.transitionDelay = Math.min(shown++, 4) * 70 + 'ms';
+        entry.target.classList.add('is-visible');
+        observer.unobserve(entry.target);
+      });
+    }, { rootMargin: '0px 0px -10% 0px' }); // not a ratio threshold: long sections (privacy, articles) never reach one
+    targets.forEach(function(el){ el.setAttribute('data-reveal', ''); observer.observe(el); });
+  })();
+</script>
