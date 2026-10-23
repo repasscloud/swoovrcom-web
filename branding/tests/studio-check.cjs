@@ -8,7 +8,7 @@ vm.runInContext(`
 let checked=0;
 for(const name of Object.keys(DATA.themes)){
  $('preset').value=name;preset();
- for(const angle of [0,90,138])for(const layout of ['bird','horizontal','app-rounded','reddit-banner','reddit-mobile-banner']){
+ for(const angle of [0,90,138])for(const layout of Object.keys(DATA.templates)){
   $('angle').value=angle;$('layout').value=layout;update();
   if($('error').textContent||!current.includes('<svg'))throw Error(name+': '+$('error').textContent);
   checked++;
@@ -24,3 +24,8 @@ if(current!==''||!$('error').textContent)throw Error('Invalid input was not reje
 console.log('PASS: '+checked+' studio preset/angle/layout combinations; invalid colour rejected.');
 `,context);
 assert.equal(elements.preset.options.length,18);
+
+vm.runInContext(`
+$('preset').value='pride-trans-5';preset();$('swapPaints').onclick();$('bird').value='#0D0F12';$('layout').value='facebook-cover-tagline';update();
+if(!current.includes('fill-opacity="0.94"')||!current.includes('aria-label="Your kind of connection."'))throw Error('Custom flag tagline backing missing');
+`,context);

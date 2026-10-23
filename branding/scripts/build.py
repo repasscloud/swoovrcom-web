@@ -6,6 +6,14 @@ from xml.sax.saxutils import escape
 from PIL import Image
 ROOT=Path(__file__).resolve().parents[1]
 G=json.loads((ROOT/'source/geometry.json').read_text())
+TAGLINE=json.loads((ROOT/'source/tagline.json').read_text())
+# Font size and optical edge spacing are art-directed for each header canvas.
+HEADER_TAGLINES={
+    'open-graph':(26,44,32), 'x-header':(28,50,34),
+    'facebook-cover':(18,28,22), 'linkedin-cover':(24,48,28),
+    'youtube-banner':(44,90,72), 'wallpaper':(64,144,108),
+    'reddit-banner':(18,24,16), 'reddit-mobile-banner':(18,24,16),
+}
 HEX=re.compile(r'^#[0-9a-fA-F]{6}$')
 def colours(v):
     values=v.split(',') if isinstance(v,str) else v
@@ -25,7 +33,11 @@ def shape(kind,x,y,w,h,fill):
     return f'<path fill="{fill}" fill-rule="evenodd" transform="translate({tx:.5f} {ty:.5f}) scale({s:.6f})" d="{g["path"]}"/>'
 
 def svg(kind,t,angle=None):
-    layouts={'bird':(384,324),'wordmark':(620,112),'horizontal':(1160,360),'stacked':(700,680),'app-square':(1024,1024),'app-rounded':(1024,1024),'adaptive-foreground':(1080,1080),'adaptive-background':(1080,1080),'avatar':(1024,1024),'social-square':(1080,1080),'social-portrait':(1080,1350),'story':(1080,1920),'open-graph':(1200,630),'x-header':(1500,500),'linkedin-cover':(1584,396),'youtube-banner':(2560,1440),'wallpaper':(3840,2160),'reddit-banner':(1072,128),'reddit-mobile-banner':(1080,128)}
+    with_tagline=kind.endswith('-tagline')
+    if with_tagline:
+        kind=kind.removesuffix('-tagline')
+        if kind not in HEADER_TAGLINES:raise ValueError('Taglines are supported on header and wallpaper layouts only.')
+    layouts={'bird':(384,324),'wordmark':(620,112),'horizontal':(1160,360),'stacked':(700,680),'app-square':(1024,1024),'app-rounded':(1024,1024),'adaptive-foreground':(1080,1080),'adaptive-background':(1080,1080),'avatar':(1024,1024),'social-square':(1080,1080),'social-portrait':(1080,1350),'story':(1080,1920),'open-graph':(1200,630),'x-header':(1500,500),'facebook-cover':(851,315),'linkedin-cover':(1584,396),'youtube-banner':(2560,1440),'wallpaper':(3840,2160),'reddit-banner':(1072,128),'reddit-mobile-banner':(1080,128)}
     w,h=layouts[kind];defs=[];body=[]
     for name,key in [('bird','bird'),('word','word'),('background','background')]:
         if t.get(key) is not None:
@@ -49,12 +61,26 @@ def svg(kind,t,angle=None):
     elif kind in ('app-square','app-rounded','avatar'):body.append(shape('bird',145,200,734,620,bf))
     else:
         # Keep all banner content in central crop-safe region, including YouTube's centre strip.
-        if kind in ('x-header','linkedin-cover','youtube-banner','open-graph','reddit-banner','reddit-mobile-banner'):
-            lw=min(w*.68,(h-24)*1160/360,1200);lh=lw*360/1160;x=(w-lw)/2;y=(h-lh)/2
+        if kind in ('facebook-cover','x-header','linkedin-cover','youtube-banner','open-graph','reddit-banner','reddit-mobile-banner'):
+            # Facebook gets a smaller central lockup to leave room for display crops.
+            max_width=w*(.60 if kind=='facebook-cover' else .68)
+            lw=min(max_width,(h-24)*1160/360,1200);lh=lw*360/1160;x=(w-lw)/2;y=(h-lh)/2
             body.append(f'<g transform="translate({x} {y}) scale({lw/1160})">'+shape('bird',20,18,384,324,bf)+shape('wordmark',450,163,690,125,wf)+'</g>')
         else:
             bw=w*.48;bh=bw*324/384
             body += [shape('bird',(w-bw)/2,h*.42-bh/2,bw,bh,bf),shape('wordmark',w*.18,h*.65,w*.64,w*.64*112/620,wf)]
+    if with_tagline:
+        size,mx,my=HEADER_TAGLINES[kind]
+        bx,by,bw,bh=TAGLINE['viewBox'];scale=size/TAGLINE['reference_font_size']
+        tx=w-mx-(bx+bw)*scale;ty=h-my-(by+bh)*scale
+        backing=''
+        if len(t['background'])>1:
+            # Flag stripes can cross letterforms; a quiet backing preserves readability.
+            rgb=[int(t['word'][0][i:i+2],16) for i in (1,3,5)]
+            light=sum(c*weight for c,weight in zip(rgb,(.2126,.7152,.0722)))>140
+            backing_colour='#23162F' if light else '#FFF9FF'
+            backing=f'<rect x="{bx-45}" y="{by-45}" width="{bw+90}" height="{bh+90}" rx="28" fill="{backing_colour}" fill-opacity="0.94"/>'
+        body.append(f'<g role="img" aria-label="{escape(TAGLINE["text"])}" fill="{wf}" transform="translate({tx:.6f} {ty:.6f}) scale({scale:.6f})">{backing}<path d="{TAGLINE["path"]}"/></g>')
     return f'<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" viewBox="0 0 {w} {h}" role="img"><title>Swoovr {escape(kind)}</title><defs>{"".join(defs)}</defs>{"".join(body)}</svg>'
 
 def save_image(im,dst,**options):
@@ -94,8 +120,9 @@ def build(theme,t,out,args):
         for name in json.loads(metadata.read_text()).get('files',[]):
             if Path(name).name==name:(folder/name).unlink(missing_ok=True)
     (folder/'build.json').write_text(json.dumps({'name':theme,'theme':t,'angle_override':args.angle,'files':[]},indent=2))
-    kinds=['bird','wordmark','horizontal','stacked','app-square','app-rounded','adaptive-foreground','adaptive-background','avatar','social-square','social-portrait','story','open-graph','x-header','linkedin-cover','youtube-banner','wallpaper','reddit-banner','reddit-mobile-banner']
+    kinds=['bird','wordmark','horizontal','stacked','app-square','app-rounded','adaptive-foreground','adaptive-background','avatar','social-square','social-portrait','story','open-graph','x-header','facebook-cover','linkedin-cover','youtube-banner','wallpaper','reddit-banner','reddit-mobile-banner']
     if args.core_only:kinds=kinds[:9]
+    else:kinds += [kind+'-tagline' for kind in kinds if kind in HEADER_TAGLINES]
     jobs=[]
     for kind in kinds:
         src=folder/(kind+'.svg');src.write_text(svg(kind,t,args.angle))
@@ -130,10 +157,11 @@ def build(theme,t,out,args):
 
 
 def record_build(folder,theme,angle):
-    kinds='bird wordmark horizontal stacked app-square app-rounded adaptive-foreground adaptive-background avatar social-square social-portrait story open-graph x-header linkedin-cover youtube-banner wallpaper pwa-maskable reddit-banner reddit-mobile-banner'.split()
+    kinds='bird wordmark horizontal stacked app-square app-rounded adaptive-foreground adaptive-background avatar social-square social-portrait story open-graph x-header facebook-cover linkedin-cover youtube-banner wallpaper pwa-maskable reddit-banner reddit-mobile-banner'.split()
+    kinds += [kind+'-tagline' for kind in kinds if kind in HEADER_TAGLINES]
     allowed={kind+'.svg' for kind in kinds}|{'build.json','swoovr.ico','swoovr.icns','manifest.webmanifest'}
     for kind in kinds:
-        for size in (396,500,512,630,1024,1072,1080,1350,1440,1500,1584,1920,2048,2560,3840,4096):allowed.add(f'{kind}-{size}.png')
+        for size in (396,500,512,630,851,1024,1072,1080,1200,1350,1440,1500,1584,1920,2048,2560,3840,4096):allowed.add(f'{kind}-{size}.png')
     allowed|={f'app-{size}.png' for size in (16,20,24,29,32,40,48,58,60,64,72,76,80,87,96,120,128,144,152,167,180,192,256,384,512,1024)}
     allowed|={'apple-touch-icon.png','pwa-192.png','pwa-512.png'}
     names=[f.name for f in folder.iterdir() if f.is_file() and f.name in allowed]
