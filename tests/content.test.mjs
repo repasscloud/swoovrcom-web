@@ -20,7 +20,7 @@ test('published route links resolve and all pages include shared footer and soci
    const path=match[1];if(path.startsWith('/_') || path.startsWith('/api/') || /\.[a-z]+$/i.test(path))continue;
    assert.ok(routes.includes(path),`${route} links to ${path}`);
   }
-  assert.ok(html.includes('https://x.com/swoovrapp'));assert.ok(html.includes('https://www.instagram.com/swoovr.app/'));
+  assert.ok(html.includes('https://x.com/swoovrapp'));assert.ok(html.includes('https://www.instagram.com/swoovrapp/'));
  }
  assert.ok(config.cities.includes('Adelaide'));assert.ok(config.cities.includes('Other'));
 });
