@@ -1,8 +1,8 @@
 ---
 title: "What you don’t want matters too"
 description: "Why required and excluded intentions belong in the same conversation."
-date: 2026-10-18
-draft: true
+date: 2026-10-26
+draft: false
 category: "Product thinking"
 author: Swoovr team
 ---

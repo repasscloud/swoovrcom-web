@@ -2,7 +2,7 @@
 title: "Why we’re starting with Adelaide"
 description: "Building a useful local community means looking beyond the signup count."
 date: 2026-10-18
-draft: true
+draft: false
 category: "Community"
 author: Swoovr team
 ---

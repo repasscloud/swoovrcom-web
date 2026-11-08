@@ -1,8 +1,8 @@
 ---
 title: "Verification needs a clear meaning"
 description: "A trust signal is useful when people understand what was checked and what wasn’t."
-date: 2026-10-18
-draft: true
+date: 2026-10-22
+draft: false
 category: "Trust & design"
 author: Swoovr team
 ---
