@@ -22,7 +22,7 @@
     "test:db": "node tests/migrations.integration.mjs"
   },
   "dependencies": {
-    "astro": "^7.4.0",
+    "astro": "^7.4.7",
     "pg": "^8.23.1",
     "sharp": "^0.35.5"
   },
