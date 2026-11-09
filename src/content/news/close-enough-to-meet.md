@@ -1,7 +1,7 @@
 ---
 title: "Close enough to meet, never precise enough to find"
 description: "How we’re designing location in Swoovr: what we use, what we refuse to use, and why \"nearby\" should never become a way to find someone."
-date: 2026-11-09
+date: 2026-11-08
 draft: false
 category: "Privacy & design"
 author: Swoovr team
